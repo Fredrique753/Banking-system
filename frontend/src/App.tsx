@@ -184,7 +184,7 @@ function App() {
   const [dashboardStats, setDashboardStats] = useState<any>(null);
   const [showLoanForm, setShowLoanForm] = useState(false);
   const [showClientForm, setShowClientForm] = useState(false);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'clients' | 'loans'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'clients' | 'loans' | 'reports'>('dashboard');
 
   const [clientForm, setClientForm] = useState({
     first_name: '',
@@ -318,6 +318,29 @@ function App() {
     setLoading(false);
   };
 
+  // --- DOWNLOAD REPORT HELPER ---
+  const downloadReport = async (endpoint: string, filename: string) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_BASE_URL}/api/v1/reports/${endpoint}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      } else {
+        alert('Failed to download report');
+      }
+    } catch (err) {
+      alert('Error downloading report');
+    }
+  };
+
   // --- LOGIN SCREEN ---
   if (view === 'login') {
     return (
@@ -372,6 +395,7 @@ function App() {
             <button onClick={() => { setActiveTab('dashboard'); fetchAdminData(); }} style={{ padding: '10px 20px', background: activeTab === 'dashboard' ? '#1a1a2e' : '#6c757d', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>📊 Dashboard</button>
             <button onClick={() => { setActiveTab('clients'); fetchClients(); }} style={{ padding: '10px 20px', background: activeTab === 'clients' ? '#1a1a2e' : '#6c757d', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>👥 Clients</button>
             <button onClick={() => { setActiveTab('loans'); fetchLoans(); }} style={{ padding: '10px 20px', background: activeTab === 'loans' ? '#1a1a2e' : '#6c757d', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>📋 Loans</button>
+            <button onClick={() => { setActiveTab('reports'); }} style={{ padding: '10px 20px', background: activeTab === 'reports' ? '#1a1a2e' : '#6c757d', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>📈 Reports</button>
           </div>
 
           {/* CLIENT FORM */}
@@ -519,6 +543,56 @@ function App() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          )}
+
+          {/* ============================================ */}
+          {/* REPORTS TAB - NEW! */}
+          {/* ============================================ */}
+          {activeTab === 'reports' && (
+            <div>
+              <div style={{ background: 'white', padding: '24px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', marginBottom: '20px' }}>
+                <h2 style={{ marginTop: 0, fontSize: '18px', color: '#1a1a2e' }}>📈 Financial Reports</h2>
+                <p style={{ color: '#6c757d', marginBottom: '20px' }}>Download Excel reports for your portfolio, recovery, and financial statements.</p>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+                  <div style={{ background: '#f8f9fa', padding: '20px', borderRadius: '12px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '36px', marginBottom: '10px' }}>📊</div>
+                    <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', color: '#1a1a2e' }}>Recovery Report</h3>
+                    <p style={{ fontSize: '13px', color: '#6c757d', marginBottom: '15px' }}>Overdue clients and outstanding balances</p>
+                    <button 
+                      onClick={() => downloadReport('recovery', 'recovery_report.xlsx')}
+                      style={{ padding: '8px 20px', background: '#17a2b8', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
+                    >
+                      📥 Download Excel
+                    </button>
+                  </div>
+
+                  <div style={{ background: '#f8f9fa', padding: '20px', borderRadius: '12px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '36px', marginBottom: '10px' }}>📈</div>
+                    <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', color: '#1a1a2e' }}>Financial Statements</h3>
+                    <p style={{ fontSize: '13px', color: '#6c757d', marginBottom: '15px' }}>Profit & Loss, Balance Sheet</p>
+                    <button 
+                      onClick={() => downloadReport('financials', 'financial_statements.xlsx')}
+                      style={{ padding: '8px 20px', background: '#6f42c1', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
+                    >
+                      📥 Download Excel
+                    </button>
+                  </div>
+
+                  <div style={{ background: '#f8f9fa', padding: '20px', borderRadius: '12px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '36px', marginBottom: '10px' }}>📋</div>
+                    <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', color: '#1a1a2e' }}>Portfolio Report</h3>
+                    <p style={{ fontSize: '13px', color: '#6c757d', marginBottom: '15px' }}>Expected vs actual returns, portfolio yield</p>
+                    <button 
+                      onClick={() => downloadReport('portfolio', 'portfolio_report.xlsx')}
+                      style={{ padding: '8px 20px', background: '#fd7e14', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
+                    >
+                      📥 Download Excel
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           )}
