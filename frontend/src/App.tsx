@@ -1,5 +1,11 @@
 import { useState, useEffect } from 'react';
 
+// --- USE THIS FOR PRODUCTION (RENDER) ---
+const API_BASE_URL = 'https://banking-system-qdnx.onrender.com';
+
+// --- UNCOMMENT THIS FOR LOCAL DEVELOPMENT ---
+// const API_BASE_URL = 'http://localhost:8000';
+
 function App() {
   const [view, setView] = useState<'login' | 'register' | 'borrower' | 'admin'>('login');
   const [user, setUser] = useState<any>(null);
@@ -40,7 +46,7 @@ function App() {
 
   const fetchUser = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/v1/me', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/me`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (res.ok) {
@@ -60,7 +66,7 @@ function App() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:8000/api/v1/login', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(loginForm)
@@ -82,7 +88,7 @@ function App() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:8000/api/v1/register', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(registerForm)
@@ -107,7 +113,7 @@ function App() {
 
   const fetchMyLoans = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/v1/loans', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/loans`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (res.ok) {
@@ -123,7 +129,7 @@ function App() {
     setResult(null);
     try {
       const payload = { ...formData, guarantors: guarantors.map(g => ({ ...g, monthly_income: parseFloat(g.monthly_income) || 0 })) };
-      const res = await fetch('http://localhost:8000/api/v1/apply-loan', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/apply-loan`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
         body: JSON.stringify(payload)
@@ -132,7 +138,7 @@ function App() {
       if (res.ok) {
         setSavedLoanId(data.loan_id);
         await fetchMyLoans();
-        const calcRes = await fetch('http://localhost:8000/api/v1/calculate-loan', {
+        const calcRes = await fetch(`${API_BASE_URL}/api/v1/calculate-loan`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ principal: payload.principal, annual_interest_rate: payload.annual_interest_rate, tenure_months: payload.tenure_months })
@@ -146,7 +152,7 @@ function App() {
 
   const downloadPDF = async (loanId: number) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/v1/loans/${loanId}/pdf`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/loans/${loanId}/pdf`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (res.ok) {
@@ -163,14 +169,14 @@ function App() {
 
   const fetchAdminData = async () => {
     try {
-      const statsRes = await fetch('http://localhost:8000/api/v1/admin/dashboard', {
+      const statsRes = await fetch(`${API_BASE_URL}/api/v1/admin/dashboard`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (statsRes.ok) {
         const stats = await statsRes.json();
         setDashboardStats(stats);
       }
-      const loansRes = await fetch('http://localhost:8000/api/v1/admin/loans', {
+      const loansRes = await fetch(`${API_BASE_URL}/api/v1/admin/loans`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (loansRes.ok) {
@@ -182,7 +188,7 @@ function App() {
 
   const updateLoanStatus = async (loanId: number, status: string) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/v1/admin/loans/${loanId}/status?status=${status}`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/admin/loans/${loanId}/status?status=${status}`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
@@ -354,7 +360,7 @@ function App() {
             <button 
                 onClick={async () => {
                     if (window.confirm('Generate arbitrary mock data? This will add random clients and loans.')) {
-                        const res = await fetch('http://localhost:8000/api/v1/admin/generate-mock-data', {
+                        const res = await fetch(`${API_BASE_URL}/api/v1/admin/generate-mock-data`, {
                             method: 'POST',
                             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                         });
@@ -371,12 +377,12 @@ function App() {
             </button>
             <button onClick={fetchAdminData} style={{ marginRight: '10px', padding: '8px 16px', background: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Refresh</button>
             
-            {/* --- REPORT BUTTONS (FIXED) --- */}
+            {/* Report Buttons */}
             <button 
                 onClick={async () => {
                     try {
                         const token = localStorage.getItem('token');
-                        const res = await fetch('http://localhost:8000/api/v1/reports/recovery', {
+                        const res = await fetch(`${API_BASE_URL}/api/v1/reports/recovery`, {
                             headers: { 'Authorization': `Bearer ${token}` }
                         });
                         if (res.ok) {
@@ -402,7 +408,7 @@ function App() {
                 onClick={async () => {
                     try {
                         const token = localStorage.getItem('token');
-                        const res = await fetch('http://localhost:8000/api/v1/reports/financials', {
+                        const res = await fetch(`${API_BASE_URL}/api/v1/reports/financials`, {
                             headers: { 'Authorization': `Bearer ${token}` }
                         });
                         if (res.ok) {
@@ -428,7 +434,7 @@ function App() {
                 onClick={async () => {
                     try {
                         const token = localStorage.getItem('token');
-                        const res = await fetch('http://localhost:8000/api/v1/reports/portfolio', {
+                        const res = await fetch(`${API_BASE_URL}/api/v1/reports/portfolio`, {
                             headers: { 'Authorization': `Bearer ${token}` }
                         });
                         if (res.ok) {
