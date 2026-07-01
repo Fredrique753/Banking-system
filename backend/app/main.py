@@ -1,4 +1,3 @@
-from .routes_reports import router as reports_router
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
@@ -14,26 +13,28 @@ from reportlab.lib.units import inch
 
 from .database import SessionLocal, init_db
 from . import models, auth, admin
-from .models import PaymentSchedule  # <-- IMPORTANT: FIXED MISSING IMPORT
+from .models import PaymentSchedule
+from .routes_reports import router as reports_router
 
 app = FastAPI(title="Banking System", version="1.0")
 
-# --- CORS ---
+# --- CORS CONFIGURATION (FIXED) ---
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        "https://banking-system-tau-flax.vercel.app",  # Your Vercel frontend
+        "https://banking-system-qdnx.onrender.com",    # Your Render backend
         "http://localhost",
         "http://127.0.0.1",
-        "http://localhost:3000",
         "http://localhost:5173",
-        "http://localhost:8000",
+        "http://localhost:3000",
     ],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"],
 )
 
-# --- Include Admin Router ---
+# --- Include Routers ---
 app.include_router(admin.router)
 app.include_router(reports_router)
 
@@ -93,7 +94,7 @@ def get_me(current_user: models.User = Depends(auth.get_current_user)):
 # --- Loan Endpoints ---
 @app.post("/api/v1/apply-loan")
 def apply_loan(request: dict, current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(auth.get_db)):
-    # Simplified version – you can expand if needed
+    # Simplified version – expand as needed
     return {"message": "Loan submitted"}
 
 @app.post("/api/v1/calculate-loan")
