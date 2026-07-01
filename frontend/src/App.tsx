@@ -350,116 +350,97 @@ function App() {
     );
   }
 
-  // --- ADMIN DASHBOARD ---
+  // --- ADMIN DASHBOARD (ORGANIZED) ---
   if (view === 'admin') {
     return (
       <div style={{ maxWidth: '1200px', margin: '20px auto', padding: '20px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #dc3545', paddingBottom: '10px' }}>
           <h1>🔐 Admin Panel - {user?.full_name}</h1>
-          <div>
-            <button 
-                onClick={async () => {
-                    if (window.confirm('Generate arbitrary mock data? This will add random clients and loans.')) {
-                        const res = await fetch(`${API_BASE_URL}/api/v1/admin/generate-mock-data`, {
-                            method: 'POST',
-                            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-                        });
-                        if (res.ok) {
-                            alert('Mock data generated!');
-                            fetchAdminData();
-                        } else {
-                            alert('Failed to generate data');
-                        }
-                    }
-                }} 
-                style={{ marginRight: '10px', padding: '8px 16px', background: '#ffc107', color: 'black', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-                🎲 Generate Arbitrary Data
-            </button>
-            <button onClick={fetchAdminData} style={{ marginRight: '10px', padding: '8px 16px', background: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Refresh</button>
-            
-            {/* Report Buttons */}
-            <button 
-                onClick={async () => {
-                    try {
-                        const token = localStorage.getItem('token');
-                        const res = await fetch(`${API_BASE_URL}/api/v1/reports/recovery`, {
-                            headers: { 'Authorization': `Bearer ${token}` }
-                        });
-                        if (res.ok) {
-                            const blob = await res.blob();
-                            const url = window.URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.href = url;
-                            a.download = 'recovery_report.xlsx';
-                            a.click();
-                            window.URL.revokeObjectURL(url);
-                        } else {
-                            alert('Failed to download report');
-                        }
-                    } catch (err) {
-                        alert('Error downloading report');
-                    }
-                }} 
-                style={{ marginRight: '10px', padding: '8px 16px', background: '#17a2b8', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-                📊 Recovery Report
-            </button>
+          <button onClick={handleLogout} style={{ padding: '8px 16px', background: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>🚪 Logout</button>
+        </div>
 
-            <button 
-                onClick={async () => {
-                    try {
-                        const token = localStorage.getItem('token');
-                        const res = await fetch(`${API_BASE_URL}/api/v1/reports/financials`, {
-                            headers: { 'Authorization': `Bearer ${token}` }
-                        });
-                        if (res.ok) {
-                            const blob = await res.blob();
-                            const url = window.URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.href = url;
-                            a.download = 'financial_statements.xlsx';
-                            a.click();
-                            window.URL.revokeObjectURL(url);
-                        } else {
-                            alert('Failed to download report');
-                        }
-                    } catch (err) {
-                        alert('Error downloading report');
-                    }
-                }} 
-                style={{ marginRight: '10px', padding: '8px 16px', background: '#6f42c1', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-                📈 Financial Statements
+        {/* --- ORGANIZED BUTTONS --- */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '20px' }}>
+          {/* Row 1: Data Management */}
+          <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
+            <button onClick={fetchAdminData} style={{ padding: '8px 16px', background: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+              🔄 Refresh
             </button>
+            <button 
+              onClick={async () => {
+                if (window.confirm('Generate mock data?')) {
+                  const res = await fetch(`${API_BASE_URL}/api/v1/admin/generate-mock-data`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                  });
+                  if (res.ok) {
+                    alert('Mock data generated!');
+                    fetchAdminData();
+                  }
+                }
+              }} 
+              style={{ padding: '8px 16px', background: '#ffc107', color: 'black', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+              🎲 Generate Data
+            </button>
+          </div>
 
-            <button 
-                onClick={async () => {
-                    try {
-                        const token = localStorage.getItem('token');
-                        const res = await fetch(`${API_BASE_URL}/api/v1/reports/portfolio`, {
-                            headers: { 'Authorization': `Bearer ${token}` }
-                        });
-                        if (res.ok) {
-                            const blob = await res.blob();
-                            const url = window.URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.href = url;
-                            a.download = 'portfolio_report.xlsx';
-                            a.click();
-                            window.URL.revokeObjectURL(url);
-                        } else {
-                            alert('Failed to download report');
-                        }
-                    } catch (err) {
-                        alert('Error downloading report');
-                    }
-                }} 
-                style={{ marginRight: '10px', padding: '8px 16px', background: '#fd7e14', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-                📋 Portfolio Report
+          {/* Row 2: Reports */}
+          <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
+            <button onClick={async () => {
+              const token = localStorage.getItem('token');
+              const res = await fetch(`${API_BASE_URL}/api/v1/reports/recovery`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+              });
+              if (res.ok) {
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'recovery_report.xlsx';
+                a.click();
+                window.URL.revokeObjectURL(url);
+              }
+            }} style={{ padding: '8px 16px', background: '#17a2b8', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+              📊 Recovery Report
             </button>
-            
-            <button onClick={handleLogout} style={{ padding: '8px 16px', background: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Logout</button>
+            <button onClick={async () => {
+              const token = localStorage.getItem('token');
+              const res = await fetch(`${API_BASE_URL}/api/v1/reports/financials`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+              });
+              if (res.ok) {
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'financial_statements.xlsx';
+                a.click();
+                window.URL.revokeObjectURL(url);
+              }
+            }} style={{ padding: '8px 16px', background: '#6f42c1', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+              📈 Financial Statements
+            </button>
+            <button onClick={async () => {
+              const token = localStorage.getItem('token');
+              const res = await fetch(`${API_BASE_URL}/api/v1/reports/portfolio`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+              });
+              if (res.ok) {
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'portfolio_report.xlsx';
+                a.click();
+                window.URL.revokeObjectURL(url);
+              }
+            }} style={{ padding: '8px 16px', background: '#fd7e14', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+              📋 Portfolio Report
+            </button>
           </div>
         </div>
 
+        {/* --- DASHBOARD STATS --- */}
         {dashboardStats && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '15px', marginTop: '20px' }}>
             <div style={{ background: '#e3f2fd', padding: '15px', borderRadius: '8px', textAlign: 'center' }}><strong>Total</strong><br />{dashboardStats.total}</div>
@@ -470,6 +451,7 @@ function App() {
           </div>
         )}
 
+        {/* --- ALL LOANS TABLE --- */}
         <div style={{ marginTop: '30px' }}>
           <h2>📋 All Loan Applications</h2>
           <div style={{ overflowX: 'auto', maxHeight: '600px', overflowY: 'scroll' }}>
