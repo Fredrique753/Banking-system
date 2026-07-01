@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 
 const API_BASE_URL = 'https://banking-system-qdnx.onrender.com';
 
-// ... (ChangePasswordModal component remains the same) ...
-
+// ============================================
+// CHANGE PASSWORD MODAL
+// ============================================
 function ChangePasswordModal({ isOpen, onClose, onSuccess }: { isOpen: boolean; onClose: () => void; onSuccess: () => void }) {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -46,16 +47,25 @@ function ChangePasswordModal({ isOpen, onClose, onSuccess }: { isOpen: boolean; 
   if (!isOpen) return null;
   return (
     <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
-      <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px', maxWidth: '400px', width: '90%' }}>
-        <h2>🔑 Change Password</h2>
+      <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '12px', maxWidth: '420px', width: '90%', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
+        <h2 style={{ marginTop: 0, color: '#1a1a2e' }}>🔑 Change Password</h2>
         <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: '15px' }}><label>Current Password</label><input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required style={{ width: '100%', padding: '8px', marginTop: '4px' }} /></div>
-          <div style={{ marginBottom: '15px' }}><label>New Password</label><input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required minLength={6} style={{ width: '100%', padding: '8px', marginTop: '4px' }} /></div>
-          <div style={{ marginBottom: '15px' }}><label>Confirm New Password</label><input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required style={{ width: '100%', padding: '8px', marginTop: '4px' }} /></div>
-          {error && <p style={{ color: 'red', fontSize: '14px' }}>{error}</p>}
+          <div style={{ marginBottom: '15px' }}>
+            <label style={{ fontWeight: 600, fontSize: '14px', color: '#333' }}>Current Password</label>
+            <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px', fontSize: '14px' }} />
+          </div>
+          <div style={{ marginBottom: '15px' }}>
+            <label style={{ fontWeight: 600, fontSize: '14px', color: '#333' }}>New Password</label>
+            <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required minLength={6} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px', fontSize: '14px' }} />
+          </div>
+          <div style={{ marginBottom: '15px' }}>
+            <label style={{ fontWeight: 600, fontSize: '14px', color: '#333' }}>Confirm New Password</label>
+            <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px', fontSize: '14px' }} />
+          </div>
+          {error && <p style={{ color: '#dc3545', fontSize: '14px', marginBottom: '10px' }}>{error}</p>}
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-            <button type="button" onClick={onClose} style={{ padding: '8px 16px', background: '#6c757d', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Cancel</button>
-            <button type="submit" disabled={loading} style={{ padding: '8px 16px', background: '#0056b3', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>{loading ? 'Saving...' : 'Change Password'}</button>
+            <button type="button" onClick={onClose} style={{ padding: '10px 20px', background: '#6c757d', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '14px' }}>Cancel</button>
+            <button type="submit" disabled={loading} style={{ padding: '10px 20px', background: '#0d6efd', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '14px' }}>{loading ? 'Saving...' : 'Change Password'}</button>
           </div>
         </form>
       </div>
@@ -63,7 +73,9 @@ function ChangePasswordModal({ isOpen, onClose, onSuccess }: { isOpen: boolean; 
   );
 }
 
-// --- LOAN APPLICATION FORM COMPONENT ---
+// ============================================
+// LOAN APPLICATION FORM COMPONENT
+// ============================================
 function LoanApplicationForm({ onSuccess, clients }: { onSuccess: () => void; clients: any[] }) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -105,62 +117,62 @@ function LoanApplicationForm({ onSuccess, clients }: { onSuccess: () => void; cl
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ background: '#f8f9fa', padding: '25px', borderRadius: '8px', marginTop: '20px' }}>
+    <form onSubmit={handleSubmit} style={{ background: '#ffffff', padding: '25px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', marginTop: '20px' }}>
       {/* Select Client */}
-      <div style={{ marginBottom: '20px', background: '#e9ecef', padding: '15px', borderRadius: '8px' }}>
-        <h3 style={{ margin: '0 0 15px 0' }}>👤 Select Client</h3>
-        <div>
-          <label style={{ fontWeight: 'bold', fontSize: '14px' }}>Client *</label>
-          <select value={formData.client_id} onChange={(e) => setFormData({...formData, client_id: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ced4da', marginTop: '4px' }} required>
-            <option value="">Select a client...</option>
-            {clients.map((c) => (
-              <option key={c.id} value={c.id}>{c.first_name} {c.last_name} - {c.id_number}</option>
-            ))}
-          </select>
-        </div>
+      <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '8px', marginBottom: '20px' }}>
+        <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', color: '#1a1a2e' }}>👤 Select Client</h3>
+        <select value={formData.client_id} onChange={(e) => setFormData({...formData, client_id: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '14px' }} required>
+          <option value="">Select a client...</option>
+          {clients.map((c) => (
+            <option key={c.id} value={c.id}>{c.first_name} {c.last_name} - {c.id_number}</option>
+          ))}
+        </select>
       </div>
 
       {/* Loan Terms */}
       <div style={{ background: '#fff3cd', padding: '15px', borderRadius: '8px', marginBottom: '20px' }}>
-        <h3 style={{ margin: '0 0 15px 0' }}>💰 Loan Terms</h3>
+        <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', color: '#856404' }}>💰 Loan Terms</h3>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px' }}>
-          <div><label style={{ fontWeight: 'bold', fontSize: '14px' }}>Principal (UGX) *</label><input type="number" value={formData.principal} onChange={(e) => setFormData({...formData, principal: parseFloat(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ced4da', marginTop: '4px' }} required /></div>
-          <div><label style={{ fontWeight: 'bold', fontSize: '14px' }}>Annual Rate (%) *</label><input type="number" step="0.01" value={formData.annual_interest_rate} onChange={(e) => setFormData({...formData, annual_interest_rate: parseFloat(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ced4da', marginTop: '4px' }} required /></div>
-          <div><label style={{ fontWeight: 'bold', fontSize: '14px' }}>Tenure (Months) *</label><input type="number" value={formData.tenure_months} onChange={(e) => setFormData({...formData, tenure_months: parseInt(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ced4da', marginTop: '4px' }} required /></div>
+          <div><label style={{ fontWeight: 600, fontSize: '13px' }}>Principal (UGX) *</label><input type="number" value={formData.principal} onChange={(e) => setFormData({...formData, principal: parseFloat(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} required /></div>
+          <div><label style={{ fontWeight: 600, fontSize: '13px' }}>Annual Rate (%) *</label><input type="number" step="0.01" value={formData.annual_interest_rate} onChange={(e) => setFormData({...formData, annual_interest_rate: parseFloat(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} required /></div>
+          <div><label style={{ fontWeight: 600, fontSize: '13px' }}>Tenure (Months) *</label><input type="number" value={formData.tenure_months} onChange={(e) => setFormData({...formData, tenure_months: parseInt(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} required /></div>
         </div>
       </div>
 
       {/* Guarantor */}
       <div style={{ background: '#cfe2ff', padding: '15px', borderRadius: '8px', marginBottom: '20px' }}>
-        <h3 style={{ margin: '0 0 15px 0' }}>👥 Guarantor</h3>
+        <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', color: '#084298' }}>👥 Guarantor</h3>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-          <div><label style={{ fontWeight: 'bold', fontSize: '14px' }}>Full Name</label><input value={formData.guarantor_name} onChange={(e) => setFormData({...formData, guarantor_name: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ced4da', marginTop: '4px' }} /></div>
-          <div><label style={{ fontWeight: 'bold', fontSize: '14px' }}>Phone</label><input value={formData.guarantor_phone} onChange={(e) => setFormData({...formData, guarantor_phone: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ced4da', marginTop: '4px' }} /></div>
-          <div><label style={{ fontWeight: 'bold', fontSize: '14px' }}>Email</label><input value={formData.guarantor_email} onChange={(e) => setFormData({...formData, guarantor_email: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ced4da', marginTop: '4px' }} /></div>
-          <div><label style={{ fontWeight: 'bold', fontSize: '14px' }}>Relationship</label><input value={formData.guarantor_relationship} onChange={(e) => setFormData({...formData, guarantor_relationship: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ced4da', marginTop: '4px' }} /></div>
+          <div><label style={{ fontWeight: 600, fontSize: '13px' }}>Full Name</label><input value={formData.guarantor_name} onChange={(e) => setFormData({...formData, guarantor_name: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} /></div>
+          <div><label style={{ fontWeight: 600, fontSize: '13px' }}>Phone</label><input value={formData.guarantor_phone} onChange={(e) => setFormData({...formData, guarantor_phone: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} /></div>
+          <div><label style={{ fontWeight: 600, fontSize: '13px' }}>Email</label><input value={formData.guarantor_email} onChange={(e) => setFormData({...formData, guarantor_email: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} /></div>
+          <div><label style={{ fontWeight: 600, fontSize: '13px' }}>Relationship</label><input value={formData.guarantor_relationship} onChange={(e) => setFormData({...formData, guarantor_relationship: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} /></div>
         </div>
       </div>
 
       {/* Financials */}
       <div style={{ background: '#d4edda', padding: '15px', borderRadius: '8px', marginBottom: '20px' }}>
-        <h3 style={{ margin: '0 0 15px 0' }}>📊 Financial & Employment</h3>
+        <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', color: '#0f5132' }}>📊 Financial & Employment</h3>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px' }}>
-          <div><label style={{ fontWeight: 'bold', fontSize: '14px' }}>Employment Status</label><select value={formData.employment_status} onChange={(e) => setFormData({...formData, employment_status: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ced4da', marginTop: '4px' }}><option>Employed</option><option>Self-Employed</option><option>Unemployed</option><option>Retired</option></select></div>
-          <div><label style={{ fontWeight: 'bold', fontSize: '14px' }}>Monthly Income (UGX)</label><input type="number" value={formData.monthly_income} onChange={(e) => setFormData({...formData, monthly_income: parseFloat(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ced4da', marginTop: '4px' }} /></div>
-          <div><label style={{ fontWeight: 'bold', fontSize: '14px' }}>Existing Debts (UGX/month)</label><input type="number" value={formData.existing_debts} onChange={(e) => setFormData({...formData, existing_debts: parseFloat(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ced4da', marginTop: '4px' }} /></div>
-          <div><label style={{ fontWeight: 'bold', fontSize: '14px' }}>Credit Score</label><input type="number" value={formData.credit_score} onChange={(e) => setFormData({...formData, credit_score: parseInt(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ced4da', marginTop: '4px' }} /></div>
-          <div><label style={{ fontWeight: 'bold', fontSize: '14px' }}>Collateral Type</label><input value={formData.collateral_type} onChange={(e) => setFormData({...formData, collateral_type: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ced4da', marginTop: '4px' }} /></div>
-          <div><label style={{ fontWeight: 'bold', fontSize: '14px' }}>Collateral Value (UGX)</label><input type="number" value={formData.collateral_value} onChange={(e) => setFormData({...formData, collateral_value: parseFloat(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ced4da', marginTop: '4px' }} /></div>
+          <div><label style={{ fontWeight: 600, fontSize: '13px' }}>Employment Status</label><select value={formData.employment_status} onChange={(e) => setFormData({...formData, employment_status: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }}><option>Employed</option><option>Self-Employed</option><option>Unemployed</option><option>Retired</option></select></div>
+          <div><label style={{ fontWeight: 600, fontSize: '13px' }}>Monthly Income (UGX)</label><input type="number" value={formData.monthly_income} onChange={(e) => setFormData({...formData, monthly_income: parseFloat(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} /></div>
+          <div><label style={{ fontWeight: 600, fontSize: '13px' }}>Existing Debts (UGX/month)</label><input type="number" value={formData.existing_debts} onChange={(e) => setFormData({...formData, existing_debts: parseFloat(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} /></div>
+          <div><label style={{ fontWeight: 600, fontSize: '13px' }}>Credit Score</label><input type="number" value={formData.credit_score} onChange={(e) => setFormData({...formData, credit_score: parseInt(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} /></div>
+          <div><label style={{ fontWeight: 600, fontSize: '13px' }}>Collateral Type</label><input value={formData.collateral_type} onChange={(e) => setFormData({...formData, collateral_type: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} /></div>
+          <div><label style={{ fontWeight: 600, fontSize: '13px' }}>Collateral Value (UGX)</label><input type="number" value={formData.collateral_value} onChange={(e) => setFormData({...formData, collateral_value: parseFloat(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} /></div>
         </div>
       </div>
 
-      <button type="submit" disabled={loading} style={{ padding: '12px 40px', background: '#0056b3', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '18px', width: '100%' }}>
+      <button type="submit" disabled={loading} style={{ padding: '12px 40px', background: '#0d6efd', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '16px', width: '100%', fontWeight: 600 }}>
         {loading ? 'Submitting...' : '✅ Submit Loan Application'}
       </button>
     </form>
   );
 }
 
+// ============================================
+// MAIN APP
+// ============================================
 function App() {
   const [view, setView] = useState<'login' | 'admin'>('login');
   const [user, setUser] = useState<any>(null);
@@ -172,6 +184,7 @@ function App() {
   const [dashboardStats, setDashboardStats] = useState<any>(null);
   const [showLoanForm, setShowLoanForm] = useState(false);
   const [showClientForm, setShowClientForm] = useState(false);
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'clients' | 'loans'>('dashboard');
 
   const [clientForm, setClientForm] = useState({
     first_name: '',
@@ -305,150 +318,225 @@ function App() {
     setLoading(false);
   };
 
-  // --- RENDER: LOGIN ---
+  // --- LOGIN SCREEN ---
   if (view === 'login') {
     return (
-      <div style={{ maxWidth: '400px', margin: '80px auto', padding: '20px', background: '#f5f5f5', borderRadius: '8px' }}>
-        <h1>🏦 Loan Management System</h1>
-        <form onSubmit={handleLogin}>
-          <input type="text" placeholder="Username" value={loginForm.username} onChange={e => setLoginForm({...loginForm, username: e.target.value})} style={{ width: '100%', padding: '8px', margin: '5px 0' }} required />
-          <input type="password" placeholder="Password" value={loginForm.password} onChange={e => setLoginForm({...loginForm, password: e.target.value})} style={{ width: '100%', padding: '8px', margin: '5px 0' }} required />
-          <button type="submit" disabled={loading} style={{ width: '100%', padding: '10px', background: '#0056b3', color: 'white', border: 'none', borderRadius: '4px' }}>Login</button>
-        </form>
-        <p style={{ textAlign: 'center', fontSize: '12px', color: 'gray', marginTop: '10px' }}>Default Admin: admin / admin123</p>
+      <div style={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', padding: '20px' }}>
+        <div style={{ maxWidth: '420px', width: '100%', background: 'white', padding: '40px', borderRadius: '16px', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
+          <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+            <h1 style={{ fontSize: '28px', color: '#1a1a2e', margin: 0 }}>🏦 Loan Management</h1>
+            <p style={{ color: '#6c757d', margin: '8px 0 0 0' }}>Sign in to access the admin panel</p>
+          </div>
+          <form onSubmit={handleLogin}>
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ fontWeight: 600, fontSize: '14px', color: '#333' }}>Username</label>
+              <input type="text" placeholder="Enter your username" value={loginForm.username} onChange={e => setLoginForm({...loginForm, username: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px', fontSize: '14px' }} required />
+            </div>
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ fontWeight: 600, fontSize: '14px', color: '#333' }}>Password</label>
+              <input type="password" placeholder="Enter your password" value={loginForm.password} onChange={e => setLoginForm({...loginForm, password: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px', fontSize: '14px' }} required />
+            </div>
+            <button type="submit" disabled={loading} style={{ width: '100%', padding: '12px', background: '#0d6efd', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 600, cursor: 'pointer' }}>
+              {loading ? 'Signing in...' : 'Sign In'}
+            </button>
+          </form>
+          <p style={{ textAlign: 'center', fontSize: '13px', color: '#6c757d', marginTop: '15px' }}>Default: admin / admin123</p>
+        </div>
       </div>
     );
   }
 
-  // --- RENDER: ADMIN DASHBOARD ---
+  // --- ADMIN DASHBOARD ---
   if (view === 'admin') {
     return (
-      <div style={{ maxWidth: '1200px', margin: '20px auto', padding: '20px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #dc3545', paddingBottom: '10px' }}>
-          <h1>🔐 Admin Panel - {user?.full_name}</h1>
-          <div>
-            <button onClick={() => setShowChangePassword(true)} style={{ marginRight: '10px', padding: '8px 16px', background: '#6f42c1', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>🔑 Change Password</button>
-            <button onClick={handleLogout} style={{ padding: '8px 16px', background: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>🚪 Logout</button>
+      <div style={{ minHeight: '100vh', background: '#f0f2f5' }}>
+        {/* TOP NAVBAR */}
+        <div style={{ background: '#1a1a2e', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontSize: '24px' }}>🏦</span>
+            <span style={{ color: 'white', fontSize: '18px', fontWeight: 700 }}>Loan Management System</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ color: '#aaa', fontSize: '14px' }}>👋 {user?.full_name || user?.username}</span>
+            <button onClick={() => setShowChangePassword(true)} style={{ padding: '6px 14px', background: 'transparent', color: '#aaa', border: '1px solid #444', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}>🔑 Change Password</button>
+            <button onClick={handleLogout} style={{ padding: '6px 14px', background: '#dc3545', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}>🚪 Logout</button>
           </div>
         </div>
 
-        {/* --- BUTTONS --- */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '20px' }}>
-          <button onClick={() => { setShowClientForm(!showClientForm); setShowLoanForm(false); }} style={{ padding: '8px 16px', background: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>➕ New Client</button>
-          <button onClick={() => { setShowLoanForm(!showLoanForm); setShowClientForm(false); }} style={{ padding: '8px 16px', background: '#17a2b8', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>📝 New Loan Application</button>
-          <button onClick={fetchAdminData} style={{ padding: '8px 16px', background: '#ffc107', color: 'black', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>🔄 Refresh</button>
-          <button onClick={fetchClients} style={{ padding: '8px 16px', background: '#6f42c1', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>👥 View Clients</button>
-          <button onClick={fetchLoans} style={{ padding: '8px 16px', background: '#fd7e14', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>📋 View Loans</button>
+        {/* MAIN CONTENT */}
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px' }}>
+          {/* ACTION BUTTONS */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '24px' }}>
+            <button onClick={() => { setShowClientForm(!showClientForm); setShowLoanForm(false); }} style={{ padding: '10px 20px', background: '#28a745', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>➕ New Client</button>
+            <button onClick={() => { setShowLoanForm(!showLoanForm); setShowClientForm(false); }} style={{ padding: '10px 20px', background: '#0d6efd', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>📝 New Loan</button>
+            <button onClick={() => { setActiveTab('dashboard'); fetchAdminData(); }} style={{ padding: '10px 20px', background: activeTab === 'dashboard' ? '#1a1a2e' : '#6c757d', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>📊 Dashboard</button>
+            <button onClick={() => { setActiveTab('clients'); fetchClients(); }} style={{ padding: '10px 20px', background: activeTab === 'clients' ? '#1a1a2e' : '#6c757d', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>👥 Clients</button>
+            <button onClick={() => { setActiveTab('loans'); fetchLoans(); }} style={{ padding: '10px 20px', background: activeTab === 'loans' ? '#1a1a2e' : '#6c757d', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>📋 Loans</button>
+          </div>
+
+          {/* CLIENT FORM */}
+          {showClientForm && (
+            <div style={{ background: 'white', padding: '24px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', marginBottom: '20px' }}>
+              <h2 style={{ marginTop: 0, fontSize: '18px', color: '#1a1a2e' }}>➕ New Client</h2>
+              <form onSubmit={handleCreateClient}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px' }}>
+                  <div><label style={{ fontWeight: 600, fontSize: '13px' }}>First Name *</label><input value={clientForm.first_name} onChange={(e) => setClientForm({...clientForm, first_name: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} required /></div>
+                  <div><label style={{ fontWeight: 600, fontSize: '13px' }}>Last Name *</label><input value={clientForm.last_name} onChange={(e) => setClientForm({...clientForm, last_name: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} required /></div>
+                  <div><label style={{ fontWeight: 600, fontSize: '13px' }}>Email *</label><input type="email" value={clientForm.email} onChange={(e) => setClientForm({...clientForm, email: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} required /></div>
+                  <div><label style={{ fontWeight: 600, fontSize: '13px' }}>Phone *</label><input value={clientForm.phone} onChange={(e) => setClientForm({...clientForm, phone: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} required /></div>
+                  <div><label style={{ fontWeight: 600, fontSize: '13px' }}>Address</label><input value={clientForm.address} onChange={(e) => setClientForm({...clientForm, address: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} /></div>
+                  <div><label style={{ fontWeight: 600, fontSize: '13px' }}>ID Number *</label><input value={clientForm.id_number} onChange={(e) => setClientForm({...clientForm, id_number: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} required /></div>
+                </div>
+                <button type="submit" disabled={loading} style={{ marginTop: '15px', padding: '10px 24px', background: '#28a745', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>{loading ? 'Creating...' : '✅ Create Client'}</button>
+              </form>
+            </div>
+          )}
+
+          {/* LOAN APPLICATION FORM */}
+          {showLoanForm && (
+            <LoanApplicationForm onSuccess={() => { setShowLoanForm(false); fetchLoans(); fetchAdminData(); }} clients={clients} />
+          )}
+
+          {/* DASHBOARD TAB */}
+          {activeTab === 'dashboard' && dashboardStats && (
+            <div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+                <div style={{ background: 'white', padding: '20px', borderRadius: '12px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+                  <div style={{ fontSize: '28px', fontWeight: 700, color: '#1a1a2e' }}>{dashboardStats.total_clients || 0}</div>
+                  <div style={{ fontSize: '13px', color: '#6c757d' }}>Total Clients</div>
+                </div>
+                <div style={{ background: 'white', padding: '20px', borderRadius: '12px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+                  <div style={{ fontSize: '28px', fontWeight: 700, color: '#1a1a2e' }}>{dashboardStats.total_loans || 0}</div>
+                  <div style={{ fontSize: '13px', color: '#6c757d' }}>Total Loans</div>
+                </div>
+                <div style={{ background: '#fff3cd', padding: '20px', borderRadius: '12px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+                  <div style={{ fontSize: '28px', fontWeight: 700, color: '#856404' }}>{dashboardStats.pending || 0}</div>
+                  <div style={{ fontSize: '13px', color: '#856404' }}>Pending</div>
+                </div>
+                <div style={{ background: '#d4edda', padding: '20px', borderRadius: '12px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+                  <div style={{ fontSize: '28px', fontWeight: 700, color: '#0f5132' }}>{dashboardStats.approved || 0}</div>
+                  <div style={{ fontSize: '13px', color: '#0f5132' }}>Approved</div>
+                </div>
+                <div style={{ background: '#f8d7da', padding: '20px', borderRadius: '12px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+                  <div style={{ fontSize: '28px', fontWeight: 700, color: '#842029' }}>{dashboardStats.rejected || 0}</div>
+                  <div style={{ fontSize: '13px', color: '#842029' }}>Rejected</div>
+                </div>
+                <div style={{ background: '#cfe2ff', padding: '20px', borderRadius: '12px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+                  <div style={{ fontSize: '28px', fontWeight: 700, color: '#084298' }}>{dashboardStats.disbursed || 0}</div>
+                  <div style={{ fontSize: '13px', color: '#084298' }}>Disbursed</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* CLIENTS TAB */}
+          {activeTab === 'clients' && clients.length > 0 && (
+            <div style={{ background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+              <h2 style={{ marginTop: 0, fontSize: '18px', color: '#1a1a2e' }}>👥 All Clients</h2>
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+                  <thead>
+                    <tr style={{ background: '#f8f9fa' }}>
+                      <th style={{ padding: '10px', textAlign: 'left' }}>ID</th>
+                      <th style={{ padding: '10px', textAlign: 'left' }}>Name</th>
+                      <th style={{ padding: '10px', textAlign: 'left' }}>Email</th>
+                      <th style={{ padding: '10px', textAlign: 'left' }}>Phone</th>
+                      <th style={{ padding: '10px', textAlign: 'left' }}>ID Number</th>
+                      <th style={{ padding: '10px', textAlign: 'left' }}>Created</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {clients.map((c) => (
+                      <tr key={c.id} style={{ borderBottom: '1px solid #eee' }}>
+                        <td style={{ padding: '10px' }}>#{c.id}</td>
+                        <td style={{ padding: '10px' }}>{c.first_name} {c.last_name}</td>
+                        <td style={{ padding: '10px' }}>{c.email}</td>
+                        <td style={{ padding: '10px' }}>{c.phone}</td>
+                        <td style={{ padding: '10px' }}>{c.id_number}</td>
+                        <td style={{ padding: '10px' }}>{new Date(c.created_at).toLocaleDateString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* LOANS TAB */}
+          {activeTab === 'loans' && loans.length > 0 && (
+            <div style={{ background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+              <h2 style={{ marginTop: 0, fontSize: '18px', color: '#1a1a2e' }}>📋 All Loan Applications</h2>
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+                  <thead>
+                    <tr style={{ background: '#f8f9fa' }}>
+                      <th style={{ padding: '10px', textAlign: 'left' }}>ID</th>
+                      <th style={{ padding: '10px', textAlign: 'left' }}>Client</th>
+                      <th style={{ padding: '10px', textAlign: 'left' }}>Principal (UGX)</th>
+                      <th style={{ padding: '10px', textAlign: 'left' }}>EMI (UGX)</th>
+                      <th style={{ padding: '10px', textAlign: 'left' }}>Status</th>
+                      <th style={{ padding: '10px', textAlign: 'left' }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {loans.map((loan) => (
+                      <tr key={loan.id} style={{ borderBottom: '1px solid #eee' }}>
+                        <td style={{ padding: '10px' }}>#{loan.id}</td>
+                        <td style={{ padding: '10px' }}>{loan.client_name || 'Unknown'}</td>
+                        <td style={{ padding: '10px' }}>{loan.principal ? loan.principal.toLocaleString() : 0}</td>
+                        <td style={{ padding: '10px' }}>{loan.monthly_emi ? loan.monthly_emi.toLocaleString() : 0}</td>
+                        <td style={{ padding: '10px' }}>
+                          <span style={{ 
+                            padding: '4px 10px', 
+                            borderRadius: '20px', 
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            background: loan.status === 'approved' ? '#d4edda' : 
+                                       loan.status === 'pending' ? '#fff3cd' : 
+                                       loan.status === 'disbursed' ? '#cfe2ff' : '#f8d7da',
+                            color: loan.status === 'approved' ? '#0f5132' : 
+                                   loan.status === 'pending' ? '#856404' : 
+                                   loan.status === 'disbursed' ? '#084298' : '#842029'
+                          }}>
+                            {loan.status || 'Unknown'}
+                          </span>
+                        </td>
+                        <td style={{ padding: '10px' }}>
+                          {loan.status === 'pending' && (
+                            <>
+                              <button onClick={() => updateLoanStatus(loan.id, 'approved')} style={{ marginRight: '5px', padding: '4px 12px', background: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Approve</button>
+                              <button onClick={() => updateLoanStatus(loan.id, 'rejected')} style={{ padding: '4px 12px', background: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Reject</button>
+                            </>
+                          )}
+                          {loan.status === 'approved' && (
+                            <button onClick={() => updateLoanStatus(loan.id, 'disbursed')} style={{ padding: '4px 12px', background: '#0d6efd', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Disburse</button>
+                          )}
+                          {loan.status !== 'pending' && loan.status !== 'approved' && loan.status !== 'disbursed' && (
+                            <span style={{ fontStyle: 'italic', fontSize: '13px', color: '#6c757d' }}>✓ Done</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* EMPTY STATE */}
+          {activeTab === 'clients' && clients.length === 0 && (
+            <div style={{ textAlign: 'center', padding: '40px', background: 'white', borderRadius: '12px' }}>
+              <p style={{ color: '#6c757d' }}>No clients yet. Click <strong>"New Client"</strong> to add one.</p>
+            </div>
+          )}
+          {activeTab === 'loans' && loans.length === 0 && (
+            <div style={{ textAlign: 'center', padding: '40px', background: 'white', borderRadius: '12px' }}>
+              <p style={{ color: '#6c757d' }}>No loan applications yet. Click <strong>"New Loan"</strong> to create one.</p>
+            </div>
+          )}
         </div>
 
-        {/* --- STATS --- */}
-        {dashboardStats && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '15px', marginBottom: '20px' }}>
-            <div style={{ background: '#e3f2fd', padding: '15px', borderRadius: '8px', textAlign: 'center' }}><strong>Clients</strong><br />{dashboardStats.total_clients || 0}</div>
-            <div style={{ background: '#e3f2fd', padding: '15px', borderRadius: '8px', textAlign: 'center' }}><strong>Total Loans</strong><br />{dashboardStats.total_loans || 0}</div>
-            <div style={{ background: '#fff3cd', padding: '15px', borderRadius: '8px', textAlign: 'center' }}><strong>Pending</strong><br />{dashboardStats.pending || 0}</div>
-            <div style={{ background: '#d4edda', padding: '15px', borderRadius: '8px', textAlign: 'center' }}><strong>Approved</strong><br />{dashboardStats.approved || 0}</div>
-            <div style={{ background: '#f8d7da', padding: '15px', borderRadius: '8px', textAlign: 'center' }}><strong>Rejected</strong><br />{dashboardStats.rejected || 0}</div>
-            <div style={{ background: '#cfe2ff', padding: '15px', borderRadius: '8px', textAlign: 'center' }}><strong>Disbursed</strong><br />{dashboardStats.disbursed || 0}</div>
-          </div>
-        )}
-
-        {/* --- NEW CLIENT FORM --- */}
-        {showClientForm && (
-          <form onSubmit={handleCreateClient} style={{ background: '#f8f9fa', padding: '25px', borderRadius: '8px', marginBottom: '20px' }}>
-            <h3>➕ New Client</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px' }}>
-              <div><label>First Name *</label><input value={clientForm.first_name} onChange={(e) => setClientForm({...clientForm, first_name: e.target.value})} style={{ width: '100%', padding: '8px' }} required /></div>
-              <div><label>Last Name *</label><input value={clientForm.last_name} onChange={(e) => setClientForm({...clientForm, last_name: e.target.value})} style={{ width: '100%', padding: '8px' }} required /></div>
-              <div><label>Email *</label><input type="email" value={clientForm.email} onChange={(e) => setClientForm({...clientForm, email: e.target.value})} style={{ width: '100%', padding: '8px' }} required /></div>
-              <div><label>Phone *</label><input value={clientForm.phone} onChange={(e) => setClientForm({...clientForm, phone: e.target.value})} style={{ width: '100%', padding: '8px' }} required /></div>
-              <div><label>Address</label><input value={clientForm.address} onChange={(e) => setClientForm({...clientForm, address: e.target.value})} style={{ width: '100%', padding: '8px' }} /></div>
-              <div><label>ID Number *</label><input value={clientForm.id_number} onChange={(e) => setClientForm({...clientForm, id_number: e.target.value})} style={{ width: '100%', padding: '8px' }} required /></div>
-            </div>
-            <button type="submit" disabled={loading} style={{ marginTop: '15px', padding: '8px 16px', background: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>{loading ? 'Creating...' : '✅ Create Client'}</button>
-          </form>
-        )}
-
-        {/* --- LOAN APPLICATION FORM --- */}
-        {showLoanForm && (
-          <LoanApplicationForm onSuccess={() => { setShowLoanForm(false); fetchLoans(); fetchAdminData(); }} clients={clients} />
-        )}
-
-        {/* --- CLIENTS TABLE --- */}
-        {clients.length > 0 && !showClientForm && !showLoanForm && (
-          <div style={{ marginTop: '20px' }}>
-            <h2>👥 All Clients</h2>
-            <div style={{ overflowX: 'auto', maxHeight: '400px', overflowY: 'scroll' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-                <thead style={{ position: 'sticky', top: 0, background: '#333', color: 'white' }}>
-                  <tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>ID Number</th><th>Created</th></tr>
-                </thead>
-                <tbody>
-                  {clients.map((c) => (
-                    <tr key={c.id} style={{ borderBottom: '1px solid #ddd' }}>
-                      <td>#{c.id}</td>
-                      <td>{c.first_name} {c.last_name}</td>
-                      <td>{c.email}</td>
-                      <td>{c.phone}</td>
-                      <td>{c.id_number}</td>
-                      <td>{new Date(c.created_at).toLocaleDateString()}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* --- LOANS TABLE --- */}
-        {loans.length > 0 && !showClientForm && !showLoanForm && (
-          <div style={{ marginTop: '30px' }}>
-            <h2>📋 All Loan Applications</h2>
-            <div style={{ overflowX: 'auto', maxHeight: '600px', overflowY: 'scroll' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-                <thead style={{ position: 'sticky', top: 0, background: '#333', color: 'white' }}>
-                  <tr><th>ID</th><th>Client</th><th>Principal (UGX)</th><th>EMI (UGX)</th><th>Status</th><th>Actions</th></tr>
-                </thead>
-                <tbody>
-                  {loans.map((loan) => (
-                    <tr key={loan.id} style={{ borderBottom: '1px solid #ddd' }}>
-                      <td>#{loan.id}</td>
-                      <td>{loan.client_name || 'Unknown'}</td>
-                      <td>{loan.principal ? loan.principal.toLocaleString() : 0}</td>
-                      <td>{loan.monthly_emi ? loan.monthly_emi.toLocaleString() : 0}</td>
-                      <td>
-                        <span style={{ 
-                          background: loan.status === 'approved' ? '#d4edda' : 
-                                     loan.status === 'pending' ? '#fff3cd' : 
-                                     loan.status === 'disbursed' ? '#cfe2ff' : '#f8d7da', 
-                          padding: '3px 8px', borderRadius: '4px' 
-                        }}>
-                          {loan.status || 'Unknown'}
-                        </span>
-                      </td>
-                      <td>
-                        {loan.status === 'pending' && (
-                          <>
-                            <button onClick={() => updateLoanStatus(loan.id, 'approved')} style={{ marginRight: '5px', padding: '4px 8px', background: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Approve</button>
-                            <button onClick={() => updateLoanStatus(loan.id, 'rejected')} style={{ padding: '4px 8px', background: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Reject</button>
-                          </>
-                        )}
-                        {loan.status === 'approved' && (
-                          <button onClick={() => updateLoanStatus(loan.id, 'disbursed')} style={{ padding: '4px 8px', background: '#0d6efd', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Disburse</button>
-                        )}
-                        {loan.status !== 'pending' && loan.status !== 'approved' && loan.status !== 'disbursed' && (
-                          <span style={{ fontStyle: 'italic' }}>✓ Done</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* --- CHANGE PASSWORD MODAL --- */}
+        {/* CHANGE PASSWORD MODAL */}
         <ChangePasswordModal isOpen={showChangePassword} onClose={() => setShowChangePassword(false)} onSuccess={() => {}} />
       </div>
     );
