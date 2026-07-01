@@ -10,11 +10,12 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import inch
-from pydantic import BaseModel  # <-- ADDED
+from pydantic import BaseModel
 
 from .database import SessionLocal, init_db
-from . import models, auth, admin
+from . import models, auth
 from .models import PaymentSchedule
+from .admin_routes import router as admin_router
 from .routes_reports import router as reports_router
 
 app = FastAPI(title="Banking System", version="1.0")
@@ -36,7 +37,7 @@ app.add_middleware(
 )
 
 # --- Include Routers ---
-app.include_router(admin.router)
+app.include_router(admin_router)
 app.include_router(reports_router)
 
 # --- Startup: Create Tables & Admin User ---
@@ -92,7 +93,7 @@ def register(user: auth.UserCreate, db: Session = Depends(auth.get_db)):
 def get_me(current_user: models.User = Depends(auth.get_current_user)):
     return current_user
 
-# --- CHANGE PASSWORD ENDPOINT (NEW) ---
+# --- CHANGE PASSWORD ENDPOINT ---
 class ChangePasswordRequest(BaseModel):
     current_password: str
     new_password: str
@@ -114,50 +115,17 @@ def change_password(
     
     return {"message": "Password changed successfully"}
 
-# --- Loan Endpoints ---
-@app.post("/api/v1/apply-loan")
-def apply_loan(request: dict, current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(auth.get_db)):
-    return {"message": "Loan submitted"}
-
-@app.post("/api/v1/calculate-loan")
-def calculate_loan(request: dict):
-    from .calculators.amortization import calculate_emi, generate_amortization_schedule
-    principal = Decimal(request.get("principal"))
-    rate = Decimal(request.get("annual_interest_rate"))
-    tenure = int(request.get("tenure_months"))
-    
-    emi = calculate_emi(principal, rate, tenure)
-    schedule = generate_amortization_schedule(principal, rate, tenure)
-    total_payment = sum(item["emi"] for item in schedule)
-    total_interest = total_payment - principal
-    
-    return {
-        "monthly_emi": emi,
-        "total_payment": total_payment,
-        "total_interest": total_interest,
-        "schedule": schedule
-    }
-
-@app.get("/api/v1/loans")
-def list_my_loans(current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(auth.get_db)):
-    loans = db.query(models.Loan).filter(models.Loan.user_id == current_user.id).order_by(models.Loan.created_at.desc()).all()
-    return [
-        {
-            "id": l.id,
-            "customer_name": l.customer_name,
-            "principal": l.principal,
-            "monthly_emi": l.monthly_emi,
-            "status": l.status.value,
-            "created_at": l.created_at
-        } for l in loans
-    ]
-
 # --- PDF GENERATION ---
 @app.get("/api/v1/loans/{loan_id}/pdf")
 def generate_loan_pdf(loan_id: int, current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(auth.get_db)):
     loan = db.query(models.Loan).filter(models.Loan.id == loan_id).first()
-    if not loan or loan.user_id != current_user.id:
+    if not loan:
         raise HTTPException(status_code=404, detail="Loan not found")
+    
+    # Check if user is admin (loan officer) or the client who owns the loan
+    # For production, we only allow admins to view PDFs
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Only admins can view loan schedules")
     
     schedule = db.query(PaymentSchedule).filter(PaymentSchedule.loan_id == loan_id).order_by(PaymentSchedule.month).all()
     
@@ -166,12 +134,16 @@ def generate_loan_pdf(loan_id: int, current_user: models.User = Depends(auth.get
     styles = getSampleStyleSheet()
     elements = []
     
+    # Get client name
+    client = db.query(models.Client).filter(models.Client.id == loan.client_id).first()
+    client_name = f"{client.first_name} {client.last_name}" if client else "Unknown"
+    
     title_style = styles['Heading1']
     elements.append(Paragraph(f"Loan Amortization Schedule - #{loan.id}", title_style))
     elements.append(Spacer(1, 12))
     
     summary_style = styles['Normal']
-    elements.append(Paragraph(f"<b>Customer:</b> {loan.customer_name}", summary_style))
+    elements.append(Paragraph(f"<b>Client:</b> {client_name}", summary_style))
     elements.append(Paragraph(f"<b>Principal:</b> UGX {loan.principal:,.2f}", summary_style))
     elements.append(Paragraph(f"<b>Rate:</b> {loan.annual_interest_rate}%", summary_style))
     elements.append(Paragraph(f"<b>Tenure:</b> {loan.tenure_months} months", summary_style))
