@@ -11,7 +11,6 @@ router = APIRouter(prefix="/api/v1/reports", tags=["Reports"])
 
 @router.get("/recovery")
 def download_recovery_report(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """Download Recovery Report (Excel)"""
     if current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
     
@@ -24,7 +23,6 @@ def download_recovery_report(current_user: User = Depends(get_current_user), db:
 
 @router.get("/financials")
 def download_financial_statements(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """Download Financial Statements (Excel)"""
     if current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
     
@@ -37,7 +35,6 @@ def download_financial_statements(current_user: User = Depends(get_current_user)
 
 @router.get("/portfolio")
 def download_portfolio_report(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """Download Portfolio Report (Excel)"""
     if current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
     

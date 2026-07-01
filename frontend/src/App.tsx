@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 
 const API_BASE_URL = 'https://banking-system-qdnx.onrender.com';
 
+// ... (ChangePasswordModal component remains the same) ...
+
 function ChangePasswordModal({ isOpen, onClose, onSuccess }: { isOpen: boolean; onClose: () => void; onSuccess: () => void }) {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -171,7 +173,6 @@ function App() {
   const [showLoanForm, setShowLoanForm] = useState(false);
   const [showClientForm, setShowClientForm] = useState(false);
 
-  // --- NEW CLIENT FORM ---
   const [clientForm, setClientForm] = useState({
     first_name: '',
     last_name: '',
@@ -343,12 +344,12 @@ function App() {
         {/* --- STATS --- */}
         {dashboardStats && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '15px', marginBottom: '20px' }}>
-            <div style={{ background: '#e3f2fd', padding: '15px', borderRadius: '8px', textAlign: 'center' }}><strong>Clients</strong><br />{dashboardStats.total_clients}</div>
-            <div style={{ background: '#e3f2fd', padding: '15px', borderRadius: '8px', textAlign: 'center' }}><strong>Total Loans</strong><br />{dashboardStats.total_loans}</div>
-            <div style={{ background: '#fff3cd', padding: '15px', borderRadius: '8px', textAlign: 'center' }}><strong>Pending</strong><br />{dashboardStats.pending}</div>
-            <div style={{ background: '#d4edda', padding: '15px', borderRadius: '8px', textAlign: 'center' }}><strong>Approved</strong><br />{dashboardStats.approved}</div>
-            <div style={{ background: '#f8d7da', padding: '15px', borderRadius: '8px', textAlign: 'center' }}><strong>Rejected</strong><br />{dashboardStats.rejected}</div>
-            <div style={{ background: '#cfe2ff', padding: '15px', borderRadius: '8px', textAlign: 'center' }}><strong>Disbursed</strong><br />{dashboardStats.disbursed}</div>
+            <div style={{ background: '#e3f2fd', padding: '15px', borderRadius: '8px', textAlign: 'center' }}><strong>Clients</strong><br />{dashboardStats.total_clients || 0}</div>
+            <div style={{ background: '#e3f2fd', padding: '15px', borderRadius: '8px', textAlign: 'center' }}><strong>Total Loans</strong><br />{dashboardStats.total_loans || 0}</div>
+            <div style={{ background: '#fff3cd', padding: '15px', borderRadius: '8px', textAlign: 'center' }}><strong>Pending</strong><br />{dashboardStats.pending || 0}</div>
+            <div style={{ background: '#d4edda', padding: '15px', borderRadius: '8px', textAlign: 'center' }}><strong>Approved</strong><br />{dashboardStats.approved || 0}</div>
+            <div style={{ background: '#f8d7da', padding: '15px', borderRadius: '8px', textAlign: 'center' }}><strong>Rejected</strong><br />{dashboardStats.rejected || 0}</div>
+            <div style={{ background: '#cfe2ff', padding: '15px', borderRadius: '8px', textAlign: 'center' }}><strong>Disbursed</strong><br />{dashboardStats.disbursed || 0}</div>
           </div>
         )}
 
@@ -412,10 +413,19 @@ function App() {
                   {loans.map((loan) => (
                     <tr key={loan.id} style={{ borderBottom: '1px solid #ddd' }}>
                       <td>#{loan.id}</td>
-                      <td>{loan.client_name}</td>
-                      <td>{loan.principal.toLocaleString()}</td>
-                      <td>{loan.monthly_emi.toLocaleString()}</td>
-                      <td><span style={{ background: loan.status === 'approved' ? '#d4edda' : loan.status === 'pending' ? '#fff3cd' : '#f8d7da', padding: '3px 8px', borderRadius: '4px' }}>{loan.status}</span></td>
+                      <td>{loan.client_name || 'Unknown'}</td>
+                      <td>{loan.principal ? loan.principal.toLocaleString() : 0}</td>
+                      <td>{loan.monthly_emi ? loan.monthly_emi.toLocaleString() : 0}</td>
+                      <td>
+                        <span style={{ 
+                          background: loan.status === 'approved' ? '#d4edda' : 
+                                     loan.status === 'pending' ? '#fff3cd' : 
+                                     loan.status === 'disbursed' ? '#cfe2ff' : '#f8d7da', 
+                          padding: '3px 8px', borderRadius: '4px' 
+                        }}>
+                          {loan.status || 'Unknown'}
+                        </span>
+                      </td>
                       <td>
                         {loan.status === 'pending' && (
                           <>
@@ -423,8 +433,12 @@ function App() {
                             <button onClick={() => updateLoanStatus(loan.id, 'rejected')} style={{ padding: '4px 8px', background: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Reject</button>
                           </>
                         )}
-                        {loan.status === 'approved' && <button onClick={() => updateLoanStatus(loan.id, 'disbursed')} style={{ padding: '4px 8px', background: '#0d6efd', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Disburse</button>}
-                        {loan.status !== 'pending' && <span style={{ fontStyle: 'italic' }}>✓ Done</span>}
+                        {loan.status === 'approved' && (
+                          <button onClick={() => updateLoanStatus(loan.id, 'disbursed')} style={{ padding: '4px 8px', background: '#0d6efd', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Disburse</button>
+                        )}
+                        {loan.status !== 'pending' && loan.status !== 'approved' && loan.status !== 'disbursed' && (
+                          <span style={{ fontStyle: 'italic' }}>✓ Done</span>
+                        )}
                       </td>
                     </tr>
                   ))}

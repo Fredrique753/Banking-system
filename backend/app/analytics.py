@@ -4,14 +4,11 @@ from datetime import datetime, timedelta
 from .models import Loan, PaymentSchedule, User, LoanStatus
 
 def get_portfolio_summary(db: Session):
-    """Calculate total portfolio metrics."""
     total_loans = db.query(Loan).count()
     total_principal = db.query(Loan.principal).all()
     total_principal_sum = sum([p[0] for p in total_principal]) if total_principal else Decimal(0)
-    
     total_interest = db.query(Loan.total_interest).all()
     total_interest_sum = sum([i[0] for i in total_interest]) if total_interest else Decimal(0)
-    
     return {
         "total_loans": total_loans,
         "total_principal": total_principal_sum,
@@ -19,34 +16,30 @@ def get_portfolio_summary(db: Session):
     }
 
 def get_overdue_loans(db: Session):
-    """Get all overdue loans with days overdue."""
     today = datetime.utcnow().date()
     overdue_list = []
-    
     loans = db.query(Loan).filter(Loan.status == LoanStatus.DISBURSED).all()
     for loan in loans:
         schedules = db.query(PaymentSchedule).filter(
             PaymentSchedule.loan_id == loan.id,
             PaymentSchedule.paid == False
         ).order_by(PaymentSchedule.month).all()
-        
         if schedules:
-            # Get the oldest unpaid schedule
             oldest = schedules[0]
             due_date = loan.created_at + timedelta(days=30 * oldest.month)
             days_overdue = (today - due_date.date()).days
-            
             if days_overdue > 0:
                 total_paid = db.query(PaymentSchedule).filter(
                     PaymentSchedule.loan_id == loan.id,
                     PaymentSchedule.paid == True
                 ).all()
                 total_paid_sum = sum([p.emi for p in total_paid]) if total_paid else Decimal(0)
-                
+                client = loan.client
+                client_name = f"{client.first_name} {client.last_name}" if client else "Unknown"
                 overdue_list.append({
                     "loan_id": loan.id,
-                    "customer_name": loan.customer_name,
-                    "customer_phone": loan.customer_phone,
+                    "customer_name": client_name,
+                    "customer_phone": client.phone if client else "N/A",
                     "principal": loan.principal,
                     "monthly_emi": loan.monthly_emi,
                     "total_paid": total_paid_sum,
@@ -55,28 +48,21 @@ def get_overdue_loans(db: Session):
                     "months_overdue": oldest.month - 1,
                     "status": "Overdue"
                 })
-    
     return overdue_list
 
 def get_recovery_metrics(db: Session):
-    """Calculate recovery rates and expected returns."""
     loans = db.query(Loan).filter(Loan.status == LoanStatus.DISBURSED).all()
-    
     total_expected = Decimal(0)
     total_collected = Decimal(0)
     total_principal = Decimal(0)
-    
     for loan in loans:
         schedules = db.query(PaymentSchedule).filter(PaymentSchedule.loan_id == loan.id).all()
         expected = sum([s.emi for s in schedules])
         collected = sum([s.emi for s in schedules if s.paid])
-        
         total_expected += expected
         total_collected += collected
         total_principal += loan.principal
-    
     repayment_rate = (total_collected / total_expected * 100) if total_expected > 0 else 0
-    
     return {
         "total_expected": total_expected,
         "total_collected": total_collected,
@@ -86,18 +72,18 @@ def get_recovery_metrics(db: Session):
     }
 
 def get_all_clients_with_loans(db: Session):
-    """Get all clients with their loan details."""
     loans = db.query(Loan).filter(Loan.status == LoanStatus.DISBURSED).all()
     clients = []
     for loan in loans:
         schedules = db.query(PaymentSchedule).filter(PaymentSchedule.loan_id == loan.id).all()
         collected = sum([s.emi for s in schedules if s.paid])
         expected = sum([s.emi for s in schedules])
-        
+        client = loan.client
+        client_name = f"{client.first_name} {client.last_name}" if client else "Unknown"
         clients.append({
-            "client_name": loan.customer_name,
-            "client_phone": loan.customer_phone,
-            "client_email": loan.customer_email,
+            "client_name": client_name,
+            "client_phone": client.phone if client else "N/A",
+            "client_email": client.email if client else "N/A",
             "principal": loan.principal,
             "interest_rate": loan.annual_interest_rate,
             "tenure": loan.tenure_months,

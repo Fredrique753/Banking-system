@@ -18,6 +18,7 @@ from .models import PaymentSchedule
 from .admin_routes import router as admin_router
 from .routes_reports import router as reports_router
 
+# --- CREATE APP ---
 app = FastAPI(title="Banking System", version="1.0")
 
 # --- CORS CONFIGURATION ---
@@ -36,11 +37,11 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"],
 )
 
-# --- Include Routers ---
+# --- REGISTER ROUTERS ---
 app.include_router(admin_router)
 app.include_router(reports_router)
 
-# --- Startup: Create Tables & Admin User ---
+# --- STARTUP: CREATE TABLES & ADMIN USER ---
 @app.on_event("startup")
 def startup():
     init_db()
@@ -58,12 +59,12 @@ def startup():
         db.commit()
     db.close()
 
-# --- Root ---
+# --- ROOT ENDPOINT ---
 @app.get("/")
 def root():
     return {"message": "Banking System API"}
 
-# --- Authentication Endpoints ---
+# --- AUTHENTICATION ENDPOINTS ---
 @app.post("/api/v1/login")
 def login(user: auth.UserLogin, db: Session = Depends(auth.get_db)):
     db_user = auth.authenticate_user(db, user.username, user.password)
@@ -115,15 +116,14 @@ def change_password(
     
     return {"message": "Password changed successfully"}
 
-# --- PDF GENERATION ---
+# --- PDF GENERATION ENDPOINT ---
 @app.get("/api/v1/loans/{loan_id}/pdf")
 def generate_loan_pdf(loan_id: int, current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(auth.get_db)):
     loan = db.query(models.Loan).filter(models.Loan.id == loan_id).first()
     if not loan:
         raise HTTPException(status_code=404, detail="Loan not found")
     
-    # Check if user is admin (loan officer) or the client who owns the loan
-    # For production, we only allow admins to view PDFs
+    # Only admins can view PDFs
     if current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Only admins can view loan schedules")
     

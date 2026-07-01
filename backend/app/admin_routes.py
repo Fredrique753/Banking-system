@@ -6,7 +6,6 @@ from .database import SessionLocal
 from .models import Client, Loan, PaymentSchedule, User, LoanStatus
 from .auth import get_current_admin_user, get_db
 from .calculators.amortization import calculate_emi, generate_amortization_schedule
-from .mock_data import generate_all_mock_data
 from pydantic import BaseModel
 from typing import Optional
 
@@ -37,20 +36,9 @@ class LoanApplicationCreate(BaseModel):
     collateral_type: Optional[str] = None
     collateral_value: Optional[float] = None
 
-class ClientResponse(BaseModel):
-    id: int
-    first_name: str
-    last_name: str
-    email: str
-    phone: str
-    address: Optional[str]
-    id_number: str
-    created_at: datetime
-
 # --- CLIENT ENDPOINTS ---
-@router.post("/clients", response_model=ClientResponse)
+@router.post("/clients")
 def create_client(client: ClientCreate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
-    # Check if ID number already exists
     existing = db.query(Client).filter(Client.id_number == client.id_number).first()
     if existing:
         raise HTTPException(status_code=400, detail="Client with this ID number already exists")
@@ -69,12 +57,12 @@ def create_client(client: ClientCreate, db: Session = Depends(get_db), admin: Us
     db.refresh(db_client)
     return db_client
 
-@router.get("/clients", response_model=list[ClientResponse])
+@router.get("/clients")
 def get_all_clients(db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
     clients = db.query(Client).order_by(Client.created_at.desc()).all()
     return clients
 
-@router.get("/clients/{client_id}", response_model=ClientResponse)
+@router.get("/clients/{client_id}")
 def get_client(client_id: int, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
     client = db.query(Client).filter(Client.id == client_id).first()
     if not client:
@@ -84,12 +72,10 @@ def get_client(client_id: int, db: Session = Depends(get_db), admin: User = Depe
 # --- LOAN APPLICATION ENDPOINTS ---
 @router.post("/loans/apply")
 def apply_loan(application: LoanApplicationCreate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
-    # Verify client exists
     client = db.query(Client).filter(Client.id == application.client_id).first()
     if not client:
         raise HTTPException(status_code=404, detail="Client not found")
     
-    # Calculate EMI and schedule
     principal = Decimal(str(application.principal))
     rate = Decimal(str(application.annual_interest_rate))
     tenure = application.tenure_months
@@ -99,7 +85,6 @@ def apply_loan(application: LoanApplicationCreate, db: Session = Depends(get_db)
     total_payment = sum(item["emi"] for item in schedule_data)
     total_interest = total_payment - principal
     
-    # Create Loan
     db_loan = Loan(
         client_id=application.client_id,
         principal=principal,
@@ -123,7 +108,6 @@ def apply_loan(application: LoanApplicationCreate, db: Session = Depends(get_db)
     db.add(db_loan)
     db.flush()
     
-    # Create Payment Schedule
     for item in schedule_data:
         db_schedule = PaymentSchedule(
             loan_id=db_loan.id,
@@ -154,7 +138,7 @@ def get_all_loans(db: Session = Depends(get_db), admin: User = Depends(get_curre
     return [
         {
             "id": l.id,
-            "client_name": f"{l.client.first_name} {l.client.last_name}",
+            "client_name": f"{l.client.first_name} {l.client.last_name}" if l.client else "Unknown",
             "principal": l.principal,
             "status": l.status.value,
             "created_at": l.created_at,
@@ -193,10 +177,3 @@ def get_dashboard_stats(db: Session = Depends(get_db), admin: User = Depends(get
         "rejected": rejected,
         "disbursed": disbursed
     }
-
-# --- MOCK DATA ---
-@router.post("/generate-mock-data")
-def generate_mock_data(db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
-    # This uses the existing mock_data.py but creates clients instead of users
-    # We'll adapt the mock_data.py file to generate clients
-    return {"message": "Mock data generation not implemented yet"}
