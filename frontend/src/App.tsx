@@ -361,7 +361,7 @@ function App() {
     );
   }
 
-  // --- BORROWER DASHBOARD ---
+  // --- BORROWER DASHBOARD (ORGANIZED FORM) ---
   if (view === 'borrower') {
     return (
       <div style={{ maxWidth: '1100px', margin: '20px auto', padding: '20px' }}>
@@ -377,52 +377,115 @@ function App() {
 
         {!result && !savedLoanId && (
           <form onSubmit={handleLoanSubmit} style={{ background: '#f8f9fa', padding: '25px', borderRadius: '8px', marginTop: '20px' }}>
-            {/* ... loan form ... */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px', background: '#e9ecef', padding: '15px', borderRadius: '8px' }}>
-              <h3 style={{ gridColumn: '1 / -1', margin: 0 }}>👤 Customer & Next of Kin</h3>
-              <input name="customer_name" placeholder="Full Name" value={formData.customer_name} onChange={e => setFormData({...formData, customer_name: e.target.value})} style={{ padding: '8px' }} required />
-              <input name="customer_email" placeholder="Email" value={formData.customer_email} onChange={e => setFormData({...formData, customer_email: e.target.value})} style={{ padding: '8px' }} required />
-              <input name="customer_phone" placeholder="Phone" value={formData.customer_phone} onChange={e => setFormData({...formData, customer_phone: e.target.value})} style={{ padding: '8px' }} required />
-              <input name="next_of_kin_name" placeholder="Next of Kin Name" value={formData.next_of_kin_name} onChange={e => setFormData({...formData, next_of_kin_name: e.target.value})} style={{ padding: '8px' }} />
-              <input name="next_of_kin_relationship" placeholder="Relationship" value={formData.next_of_kin_relationship} onChange={e => setFormData({...formData, next_of_kin_relationship: e.target.value})} style={{ padding: '8px' }} />
-              <input name="next_of_kin_phone" placeholder="Next of Kin Phone" value={formData.next_of_kin_phone} onChange={e => setFormData({...formData, next_of_kin_phone: e.target.value})} style={{ padding: '8px' }} />
+            
+            {/* --- SECTION 1: CUSTOMER & NEXT OF KIN --- */}
+            <div style={{ background: '#e9ecef', padding: '15px', borderRadius: '8px', marginBottom: '20px' }}>
+              <h3 style={{ margin: '0 0 15px 0' }}>👤 Customer & Next of Kin</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px' }}>
+                <div>
+                  <label style={{ fontWeight: 'bold', fontSize: '14px' }}>Full Name *</label>
+                  <input name="customer_name" placeholder="Full Name" value={formData.customer_name} onChange={e => setFormData({...formData, customer_name: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ced4da', marginTop: '4px' }} required />
+                </div>
+                <div>
+                  <label style={{ fontWeight: 'bold', fontSize: '14px' }}>Email *</label>
+                  <input name="customer_email" placeholder="Email" value={formData.customer_email} onChange={e => setFormData({...formData, customer_email: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ced4da', marginTop: '4px' }} required />
+                </div>
+                <div>
+                  <label style={{ fontWeight: 'bold', fontSize: '14px' }}>Phone *</label>
+                  <input name="customer_phone" placeholder="Phone" value={formData.customer_phone} onChange={e => setFormData({...formData, customer_phone: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ced4da', marginTop: '4px' }} required />
+                </div>
+                <div>
+                  <label style={{ fontWeight: 'bold', fontSize: '14px' }}>Next of Kin Name</label>
+                  <input name="next_of_kin_name" placeholder="Next of Kin Name" value={formData.next_of_kin_name} onChange={e => setFormData({...formData, next_of_kin_name: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ced4da', marginTop: '4px' }} />
+                </div>
+                <div>
+                  <label style={{ fontWeight: 'bold', fontSize: '14px' }}>Relationship</label>
+                  <input name="next_of_kin_relationship" placeholder="Relationship" value={formData.next_of_kin_relationship} onChange={e => setFormData({...formData, next_of_kin_relationship: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ced4da', marginTop: '4px' }} />
+                </div>
+                <div>
+                  <label style={{ fontWeight: 'bold', fontSize: '14px' }}>Next of Kin Phone</label>
+                  <input name="next_of_kin_phone" placeholder="Next of Kin Phone" value={formData.next_of_kin_phone} onChange={e => setFormData({...formData, next_of_kin_phone: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ced4da', marginTop: '4px' }} />
+                </div>
+              </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px', background: '#d4edda', padding: '15px', borderRadius: '8px', marginTop: '20px' }}>
-              <h3 style={{ gridColumn: '1 / -1', margin: 0 }}>📊 Loan Determinants</h3>
-              <select name="employment_status" value={formData.employment_status} onChange={e => setFormData({...formData, employment_status: e.target.value})} style={{ padding: '8px' }}>
-                <option>Employed</option>
-                <option>Self-Employed</option>
-                <option>Unemployed</option>
-                <option>Retired</option>
-              </select>
-              <input name="monthly_income" type="number" placeholder="Monthly Income (UGX)" value={formData.monthly_income} onChange={e => setFormData({...formData, monthly_income: parseFloat(e.target.value)})} style={{ padding: '8px' }} />
-              <input name="existing_debts" type="number" placeholder="Existing Debts (UGX/month)" value={formData.existing_debts} onChange={e => setFormData({...formData, existing_debts: parseFloat(e.target.value)})} style={{ padding: '8px' }} />
-              <input name="credit_score" type="number" placeholder="Credit Score" value={formData.credit_score} onChange={e => setFormData({...formData, credit_score: parseInt(e.target.value)})} style={{ padding: '8px' }} />
-              <input name="collateral_type" placeholder="Collateral Type" value={formData.collateral_type} onChange={e => setFormData({...formData, collateral_type: e.target.value})} style={{ padding: '8px' }} />
-              <input name="collateral_value" type="number" placeholder="Collateral Value (UGX)" value={formData.collateral_value} onChange={e => setFormData({...formData, collateral_value: parseFloat(e.target.value)})} style={{ padding: '8px' }} />
+            {/* --- SECTION 2: LOAN DETERMINANTS --- */}
+            <div style={{ background: '#d4edda', padding: '15px', borderRadius: '8px', marginBottom: '20px' }}>
+              <h3 style={{ margin: '0 0 15px 0' }}>📊 Loan Determinants</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px' }}>
+                <div>
+                  <label style={{ fontWeight: 'bold', fontSize: '14px' }}>Employment Status</label>
+                  <select name="employment_status" value={formData.employment_status} onChange={e => setFormData({...formData, employment_status: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ced4da', marginTop: '4px' }}>
+                    <option>Employed</option>
+                    <option>Self-Employed</option>
+                    <option>Unemployed</option>
+                    <option>Retired</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ fontWeight: 'bold', fontSize: '14px' }}>Monthly Income (UGX)</label>
+                  <input name="monthly_income" type="number" placeholder="Monthly Income (UGX)" value={formData.monthly_income} onChange={e => setFormData({...formData, monthly_income: parseFloat(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ced4da', marginTop: '4px' }} />
+                </div>
+                <div>
+                  <label style={{ fontWeight: 'bold', fontSize: '14px' }}>Existing Debts (UGX/month)</label>
+                  <input name="existing_debts" type="number" placeholder="Existing Debts (UGX/month)" value={formData.existing_debts} onChange={e => setFormData({...formData, existing_debts: parseFloat(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ced4da', marginTop: '4px' }} />
+                </div>
+                <div>
+                  <label style={{ fontWeight: 'bold', fontSize: '14px' }}>Credit Score</label>
+                  <input name="credit_score" type="number" placeholder="Credit Score" value={formData.credit_score} onChange={e => setFormData({...formData, credit_score: parseInt(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ced4da', marginTop: '4px' }} />
+                </div>
+                <div>
+                  <label style={{ fontWeight: 'bold', fontSize: '14px' }}>Collateral Type</label>
+                  <input name="collateral_type" placeholder="Collateral Type" value={formData.collateral_type} onChange={e => setFormData({...formData, collateral_type: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ced4da', marginTop: '4px' }} />
+                </div>
+                <div>
+                  <label style={{ fontWeight: 'bold', fontSize: '14px' }}>Collateral Value (UGX)</label>
+                  <input name="collateral_value" type="number" placeholder="Collateral Value (UGX)" value={formData.collateral_value} onChange={e => setFormData({...formData, collateral_value: parseFloat(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ced4da', marginTop: '4px' }} />
+                </div>
+              </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px', background: '#fff3cd', padding: '15px', borderRadius: '8px', marginTop: '20px' }}>
-              <h3 style={{ gridColumn: '1 / -1', margin: 0 }}>💰 Loan Terms</h3>
-              <input name="principal" type="number" placeholder="Principal (UGX)" value={formData.principal} onChange={e => setFormData({...formData, principal: parseFloat(e.target.value)})} required />
-              <input name="annual_interest_rate" type="number" step="0.01" placeholder="Annual Rate (%)" value={formData.annual_interest_rate} onChange={e => setFormData({...formData, annual_interest_rate: parseFloat(e.target.value)})} required />
-              <input name="tenure_months" type="number" placeholder="Tenure (Months)" value={formData.tenure_months} onChange={e => setFormData({...formData, tenure_months: parseInt(e.target.value)})} required />
+            {/* --- SECTION 3: LOAN TERMS --- */}
+            <div style={{ background: '#fff3cd', padding: '15px', borderRadius: '8px', marginBottom: '20px' }}>
+              <h3 style={{ margin: '0 0 15px 0' }}>💰 Loan Terms</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px' }}>
+                <div>
+                  <label style={{ fontWeight: 'bold', fontSize: '14px' }}>Principal (UGX) *</label>
+                  <input name="principal" type="number" placeholder="Principal (UGX)" value={formData.principal} onChange={e => setFormData({...formData, principal: parseFloat(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ced4da', marginTop: '4px' }} required />
+                </div>
+                <div>
+                  <label style={{ fontWeight: 'bold', fontSize: '14px' }}>Annual Rate (%) *</label>
+                  <input name="annual_interest_rate" type="number" step="0.01" placeholder="Annual Rate (%)" value={formData.annual_interest_rate} onChange={e => setFormData({...formData, annual_interest_rate: parseFloat(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ced4da', marginTop: '4px' }} required />
+                </div>
+                <div>
+                  <label style={{ fontWeight: 'bold', fontSize: '14px' }}>Tenure (Months) *</label>
+                  <input name="tenure_months" type="number" placeholder="Tenure (Months)" value={formData.tenure_months} onChange={e => setFormData({...formData, tenure_months: parseInt(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ced4da', marginTop: '4px' }} required />
+                </div>
+              </div>
             </div>
 
-            <div style={{ marginTop: '20px', background: '#cfe2ff', padding: '15px', borderRadius: '8px' }}>
-              <h3 style={{ display: 'flex', justifyContent: 'space-between' }}>👥 Guarantors <button type="button" onClick={() => setGuarantors([...guarantors, { id: Date.now(), name: '', email: '', phone: '', relationship: '', employment_status: '', monthly_income: 0 }])} style={{ padding: '5px 15px', background: '#0d6efd', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>+ Add</button></h3>
+            {/* --- SECTION 4: GUARANTORS --- */}
+            <div style={{ background: '#cfe2ff', padding: '15px', borderRadius: '8px', marginBottom: '20px' }}>
+              <h3 style={{ display: 'flex', justifyContent: 'space-between', margin: '0 0 15px 0' }}>
+                👥 Guarantors
+                <button type="button" onClick={() => setGuarantors([...guarantors, { id: Date.now(), name: '', email: '', phone: '', relationship: '', employment_status: '', monthly_income: 0 }])} style={{ padding: '5px 15px', background: '#0d6efd', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                  + Add Guarantor
+                </button>
+              </h3>
               {guarantors.map((g) => (
                 <div key={g.id} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr auto', gap: '10px', marginTop: '10px', background: 'white', padding: '10px', borderRadius: '4px', alignItems: 'center' }}>
-                  <input placeholder="Full Name" value={g.name} onChange={(e) => setGuarantors(guarantors.map(g2 => g2.id === g.id ? { ...g2, name: e.target.value } : g2))} style={{ padding: '6px' }} required />
-                  <input placeholder="Email" value={g.email} onChange={(e) => setGuarantors(guarantors.map(g2 => g2.id === g.id ? { ...g2, email: e.target.value } : g2))} style={{ padding: '6px' }} />
-                  <input placeholder="Phone" value={g.phone} onChange={(e) => setGuarantors(guarantors.map(g2 => g2.id === g.id ? { ...g2, phone: e.target.value } : g2))} style={{ padding: '6px' }} required />
-                  <input placeholder="Relationship" value={g.relationship} onChange={(e) => setGuarantors(guarantors.map(g2 => g2.id === g.id ? { ...g2, relationship: e.target.value } : g2))} style={{ padding: '6px' }} />
+                  <input placeholder="Full Name" value={g.name} onChange={(e) => setGuarantors(guarantors.map(g2 => g2.id === g.id ? { ...g2, name: e.target.value } : g2))} style={{ padding: '8px', border: '1px solid #ced4da', borderRadius: '4px' }} required />
+                  <input placeholder="Email" value={g.email} onChange={(e) => setGuarantors(guarantors.map(g2 => g2.id === g.id ? { ...g2, email: e.target.value } : g2))} style={{ padding: '8px', border: '1px solid #ced4da', borderRadius: '4px' }} />
+                  <input placeholder="Phone" value={g.phone} onChange={(e) => setGuarantors(guarantors.map(g2 => g2.id === g.id ? { ...g2, phone: e.target.value } : g2))} style={{ padding: '8px', border: '1px solid #ced4da', borderRadius: '4px' }} required />
+                  <input placeholder="Relationship" value={g.relationship} onChange={(e) => setGuarantors(guarantors.map(g2 => g2.id === g.id ? { ...g2, relationship: e.target.value } : g2))} style={{ padding: '8px', border: '1px solid #ced4da', borderRadius: '4px' }} />
                   <button type="button" onClick={() => setGuarantors(guarantors.filter(g2 => g2.id !== g.id))} style={{ background: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', padding: '6px 12px', cursor: 'pointer' }}>✕</button>
                 </div>
               ))}
             </div>
-            <button type="submit" disabled={loading} style={{ marginTop: '25px', padding: '12px 40px', background: '#0056b3', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '18px', width: '100%' }}>{loading ? 'Submitting...' : '✅ Submit Full Application'}</button>
+
+            <button type="submit" disabled={loading} style={{ marginTop: '10px', padding: '12px 40px', background: '#0056b3', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '18px', width: '100%' }}>
+              {loading ? 'Submitting...' : '✅ Submit Full Application'}
+            </button>
           </form>
         )}
 
