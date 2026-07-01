@@ -6,6 +6,133 @@ const API_BASE_URL = 'https://banking-system-qdnx.onrender.com';
 // --- UNCOMMENT THIS FOR LOCAL DEVELOPMENT ---
 // const API_BASE_URL = 'http://localhost:8000';
 
+// --- CHANGE PASSWORD MODAL COMPONENT ---
+function ChangePasswordModal({ isOpen, onClose, onSuccess }: { isOpen: boolean; onClose: () => void; onSuccess: () => void }) {
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    
+    if (newPassword !== confirmPassword) {
+      setError('New passwords do not match');
+      return;
+    }
+    if (newPassword.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/change-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          current_password: currentPassword,
+          new_password: newPassword
+        })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert('Password changed successfully!');
+        onSuccess();
+        onClose();
+      } else {
+        setError(data.detail || 'Failed to change password');
+      }
+    } catch (err) {
+      setError('Error connecting to server');
+    }
+    setLoading(false);
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 1000
+    }}>
+      <div style={{
+        backgroundColor: 'white',
+        padding: '30px',
+        borderRadius: '8px',
+        maxWidth: '400px',
+        width: '90%',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
+      }}>
+        <h2>🔑 Change Password</h2>
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: '15px' }}>
+            <label>Current Password</label>
+            <input
+              type="password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              required
+              style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+            />
+          </div>
+          <div style={{ marginBottom: '15px' }}>
+            <label>New Password</label>
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              required
+              minLength={6}
+              style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+            />
+          </div>
+          <div style={{ marginBottom: '15px' }}>
+            <label>Confirm New Password</label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+            />
+          </div>
+          {error && <p style={{ color: 'red', fontSize: '14px' }}>{error}</p>}
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+            <button
+              type="button"
+              onClick={onClose}
+              style={{ padding: '8px 16px', background: '#6c757d', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              style={{ padding: '8px 16px', background: '#0056b3', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+            >
+              {loading ? 'Saving...' : 'Change Password'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [view, setView] = useState<'login' | 'register' | 'borrower' | 'admin'>('login');
   const [user, setUser] = useState<any>(null);
@@ -38,6 +165,9 @@ function App() {
   const [savedLoanId, setSavedLoanId] = useState<number | null>(null);
   const [adminLoans, setAdminLoans] = useState<any[]>([]);
   const [dashboardStats, setDashboardStats] = useState<any>(null);
+  
+  // --- STATE FOR CHANGE PASSWORD MODAL ---
+  const [showChangePassword, setShowChangePassword] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -240,12 +370,14 @@ function App() {
           <div>
             <button onClick={() => { setView('borrower'); setResult(null); setSavedLoanId(null); }} style={{ marginRight: '10px', padding: '8px 16px', background: '#0056b3', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>New Loan</button>
             <button onClick={fetchMyLoans} style={{ marginRight: '10px', padding: '8px 16px', background: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>My Loans</button>
+            <button onClick={() => setShowChangePassword(true)} style={{ marginRight: '10px', padding: '8px 16px', background: '#6f42c1', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>🔑 Change Password</button>
             <button onClick={handleLogout} style={{ padding: '8px 16px', background: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Logout</button>
           </div>
         </div>
 
         {!result && !savedLoanId && (
           <form onSubmit={handleLoanSubmit} style={{ background: '#f8f9fa', padding: '25px', borderRadius: '8px', marginTop: '20px' }}>
+            {/* ... loan form ... */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px', background: '#e9ecef', padding: '15px', borderRadius: '8px' }}>
               <h3 style={{ gridColumn: '1 / -1', margin: 0 }}>👤 Customer & Next of Kin</h3>
               <input name="customer_name" placeholder="Full Name" value={formData.customer_name} onChange={e => setFormData({...formData, customer_name: e.target.value})} style={{ padding: '8px' }} required />
@@ -346,22 +478,31 @@ function App() {
             </table>
           </div>
         )}
+        
+        {/* --- CHANGE PASSWORD MODAL --- */}
+        <ChangePasswordModal 
+          isOpen={showChangePassword} 
+          onClose={() => setShowChangePassword(false)} 
+          onSuccess={() => {}} 
+        />
       </div>
     );
   }
 
-  // --- ADMIN DASHBOARD (ORGANIZED) ---
+  // --- ADMIN DASHBOARD ---
   if (view === 'admin') {
     return (
       <div style={{ maxWidth: '1200px', margin: '20px auto', padding: '20px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #dc3545', paddingBottom: '10px' }}>
           <h1>🔐 Admin Panel - {user?.full_name}</h1>
-          <button onClick={handleLogout} style={{ padding: '8px 16px', background: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>🚪 Logout</button>
+          <div>
+            <button onClick={() => setShowChangePassword(true)} style={{ marginRight: '10px', padding: '8px 16px', background: '#6f42c1', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>🔑 Change Password</button>
+            <button onClick={handleLogout} style={{ padding: '8px 16px', background: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>🚪 Logout</button>
+          </div>
         </div>
 
         {/* --- ORGANIZED BUTTONS --- */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '20px' }}>
-          {/* Row 1: Data Management */}
           <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
             <button onClick={fetchAdminData} style={{ padding: '8px 16px', background: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
               🔄 Refresh
@@ -384,7 +525,6 @@ function App() {
             </button>
           </div>
 
-          {/* Row 2: Reports */}
           <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
             <button onClick={async () => {
               const token = localStorage.getItem('token');
@@ -440,7 +580,6 @@ function App() {
           </div>
         </div>
 
-        {/* --- DASHBOARD STATS --- */}
         {dashboardStats && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '15px', marginTop: '20px' }}>
             <div style={{ background: '#e3f2fd', padding: '15px', borderRadius: '8px', textAlign: 'center' }}><strong>Total</strong><br />{dashboardStats.total}</div>
@@ -451,7 +590,6 @@ function App() {
           </div>
         )}
 
-        {/* --- ALL LOANS TABLE --- */}
         <div style={{ marginTop: '30px' }}>
           <h2>📋 All Loan Applications</h2>
           <div style={{ overflowX: 'auto', maxHeight: '600px', overflowY: 'scroll' }}>
@@ -482,6 +620,13 @@ function App() {
             </table>
           </div>
         </div>
+        
+        {/* --- CHANGE PASSWORD MODAL --- */}
+        <ChangePasswordModal 
+          isOpen={showChangePassword} 
+          onClose={() => setShowChangePassword(false)} 
+          onSuccess={() => {}} 
+        />
       </div>
     );
   }

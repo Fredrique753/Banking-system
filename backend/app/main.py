@@ -10,6 +10,7 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import inch
+from pydantic import BaseModel  # <-- ADDED
 
 from .database import SessionLocal, init_db
 from . import models, auth, admin
@@ -18,12 +19,12 @@ from .routes_reports import router as reports_router
 
 app = FastAPI(title="Banking System", version="1.0")
 
-# --- CORS CONFIGURATION (FIXED) ---
+# --- CORS CONFIGURATION ---
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://banking-system-tau-flax.vercel.app",  # Your Vercel frontend
-        "https://banking-system-qdnx.onrender.com",    # Your Render backend
+        "https://banking-system-tau-flax.vercel.app",
+        "https://banking-system-qdnx.onrender.com",
         "http://localhost",
         "http://127.0.0.1",
         "http://localhost:5173",
@@ -91,10 +92,31 @@ def register(user: auth.UserCreate, db: Session = Depends(auth.get_db)):
 def get_me(current_user: models.User = Depends(auth.get_current_user)):
     return current_user
 
+# --- CHANGE PASSWORD ENDPOINT (NEW) ---
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+@app.post("/api/v1/change-password")
+def change_password(
+    request: ChangePasswordRequest,
+    current_user: models.User = Depends(auth.get_current_user),
+    db: Session = Depends(auth.get_db)
+):
+    # Verify current password
+    if not auth.verify_password(request.current_password, current_user.hashed_password):
+        raise HTTPException(status_code=401, detail="Current password is incorrect")
+    
+    # Hash the new password
+    new_hashed = auth.get_password_hash(request.new_password)
+    current_user.hashed_password = new_hashed
+    db.commit()
+    
+    return {"message": "Password changed successfully"}
+
 # --- Loan Endpoints ---
 @app.post("/api/v1/apply-loan")
 def apply_loan(request: dict, current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(auth.get_db)):
-    # Simplified version – expand as needed
     return {"message": "Loan submitted"}
 
 @app.post("/api/v1/calculate-loan")
@@ -130,7 +152,7 @@ def list_my_loans(current_user: models.User = Depends(auth.get_current_user), db
         } for l in loans
     ]
 
-# --- PDF GENERATION (UGX CURRENCY) ---
+# --- PDF GENERATION ---
 @app.get("/api/v1/loans/{loan_id}/pdf")
 def generate_loan_pdf(loan_id: int, current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(auth.get_db)):
     loan = db.query(models.Loan).filter(models.Loan.id == loan_id).first()
