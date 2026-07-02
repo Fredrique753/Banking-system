@@ -269,6 +269,7 @@ function App() {
   const [showLoanForm, setShowLoanForm] = useState(false);
   const [showClientForm, setShowClientForm] = useState(false);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'clients' | 'loans' | 'reports'>('dashboard');
+  // FIX: Removed setBrandColor because it was never used
   const [brandColor] = useState('#1a1a2e');
 
   const [clientForm, setClientForm] = useState({
