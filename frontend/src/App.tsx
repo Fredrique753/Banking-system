@@ -1,5 +1,5 @@
 // v2 - Force redeploy
-/* eslint-disable */ 
+/* eslint-disable */
 import { useState, useEffect } from 'react';
 // @ts-ignore
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
@@ -83,7 +83,7 @@ function ChangePasswordModal({ isOpen, onClose, onSuccess }: { isOpen: boolean; 
 }
 
 // ============================================
-// LOAN APPLICATION FORM COMPONENT
+// LOAN APPLICATION FORM COMPONENT (FIXED)
 // ============================================
 function LoanApplicationForm({ onSuccess, clients, loanProducts }: { onSuccess: () => void; clients: any[]; loanProducts: any[] }) {
   const [loading, setLoading] = useState(false);
@@ -128,10 +128,32 @@ function LoanApplicationForm({ onSuccess, clients, loanProducts }: { onSuccess: 
     if (!formData.client_id) { alert('Please select a client'); return; }
     setLoading(true);
     try {
+      // --- FIX: Convert all numbers to proper types ---
+      const payload = {
+        client_id: parseInt(formData.client_id),
+        loan_product_id: formData.loan_product_id ? parseInt(formData.loan_product_id) : null,
+        principal: parseFloat(formData.principal),
+        annual_interest_rate: parseFloat(formData.annual_interest_rate),
+        tenure_months: parseInt(formData.tenure_months),
+        business_type: formData.business_type,
+        loan_purpose: formData.loan_purpose,
+        repayment_source: formData.repayment_source,
+        guarantor_name: formData.guarantor_name,
+        guarantor_phone: formData.guarantor_phone,
+        guarantor_email: formData.guarantor_email,
+        guarantor_relationship: formData.guarantor_relationship,
+        employment_status: formData.employment_status,
+        monthly_income: parseFloat(formData.monthly_income) || 0,
+        existing_debts: parseFloat(formData.existing_debts) || 0,
+        credit_score: parseInt(formData.credit_score) || 0,
+        collateral_type: formData.collateral_type,
+        collateral_value: parseFloat(formData.collateral_value) || 0,
+      };
+
       const res = await fetch(`${API_BASE_URL}/api/v1/admin/loans/apply`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
       const data = await res.json();
       if (res.ok) {
