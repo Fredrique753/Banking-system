@@ -83,7 +83,80 @@ function ChangePasswordModal({ isOpen, onClose, onSuccess }: { isOpen: boolean; 
 }
 
 // ============================================
-// LOAN APPLICATION FORM COMPONENT
+// LOAN PRODUCT FORM
+// ============================================
+function LoanProductForm({ onSuccess, onCancel }: { onSuccess: () => void; onCancel: () => void }) {
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    min_principal: 1000000,
+    max_principal: 50000000,
+    default_interest_rate: 12,
+    default_tenure: 12,
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/admin/loan-products`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+        body: JSON.stringify(formData)
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert('✅ Loan product created successfully!');
+        onSuccess();
+      } else {
+        alert('Failed: ' + JSON.stringify(data));
+      }
+    } catch (err) {
+      alert('Error creating loan product');
+    }
+    setLoading(false);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} style={{ background: 'white', padding: '24px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', marginBottom: '20px' }}>
+      <h3 style={{ marginTop: 0, color: '#1a1a2e' }}>📦 New Loan Product</h3>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+        <div>
+          <label style={{ fontWeight: 600, fontSize: '13px', color: '#333' }}>Product Name *</label>
+          <input value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} required />
+        </div>
+        <div>
+          <label style={{ fontWeight: 600, fontSize: '13px', color: '#333' }}>Description</label>
+          <input value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} />
+        </div>
+        <div>
+          <label style={{ fontWeight: 600, fontSize: '13px', color: '#333' }}>Min Principal ({CURRENCY}) *</label>
+          <input type="number" value={formData.min_principal} onChange={(e) => setFormData({...formData, min_principal: parseFloat(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} required />
+        </div>
+        <div>
+          <label style={{ fontWeight: 600, fontSize: '13px', color: '#333' }}>Max Principal ({CURRENCY}) *</label>
+          <input type="number" value={formData.max_principal} onChange={(e) => setFormData({...formData, max_principal: parseFloat(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} required />
+        </div>
+        <div>
+          <label style={{ fontWeight: 600, fontSize: '13px', color: '#333' }}>Default Rate (%) *</label>
+          <input type="number" step="0.01" value={formData.default_interest_rate} onChange={(e) => setFormData({...formData, default_interest_rate: parseFloat(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} required />
+        </div>
+        <div>
+          <label style={{ fontWeight: 600, fontSize: '13px', color: '#333' }}>Default Tenure (Months) *</label>
+          <input type="number" value={formData.default_tenure} onChange={(e) => setFormData({...formData, default_tenure: parseInt(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} required />
+        </div>
+      </div>
+      <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+        <button type="submit" disabled={loading} style={{ padding: '10px 24px', background: '#0d6efd', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>{loading ? 'Creating...' : '✅ Create Product'}</button>
+        <button type="button" onClick={onCancel} style={{ padding: '10px 24px', background: '#6c757d', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>Cancel</button>
+      </div>
+    </form>
+  );
+}
+
+// ============================================
+// LOAN APPLICATION FORM
 // ============================================
 function LoanApplicationForm({ onSuccess, clients, loanProducts }: { onSuccess: () => void; clients: any[]; loanProducts: any[] }) {
   const [loading, setLoading] = useState(false);
@@ -156,10 +229,10 @@ function LoanApplicationForm({ onSuccess, clients, loanProducts }: { onSuccess: 
       });
       const data = await res.json();
       if (res.ok) {
-        alert(`✅ Loan application submitted! Loan ID: ${data.loan_id}\nMonthly EMI: ${CURRENCY} ${data.monthly_emi.toLocaleString()}`);
+        alert(`✅ Loan submitted! Loan ID: ${data.loan_id}\nMonthly EMI: ${CURRENCY} ${data.monthly_emi.toLocaleString()}`);
         onSuccess();
       } else {
-        alert('Failed to submit loan: ' + JSON.stringify(data, null, 2));
+        alert('Failed: ' + JSON.stringify(data));
       }
     } catch (err) {
       alert('Error submitting loan');
@@ -181,17 +254,20 @@ function LoanApplicationForm({ onSuccess, clients, loanProducts }: { onSuccess: 
       </div>
 
       {/* Loan Product */}
-      {loanProducts.length > 0 && (
-        <div style={{ background: '#e9ecef', padding: '15px', borderRadius: '8px', marginBottom: '20px' }}>
-          <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', color: '#1a1a2e' }}>📦 Loan Product</h3>
-          <select value={formData.loan_product_id} onChange={(e) => handleProductChange(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '14px' }}>
-            <option value="">Select a product (optional)</option>
-            {loanProducts.map((p: any) => (
-              <option key={p.id} value={p.id}>{p.name} - {p.default_interest_rate}% / {p.default_tenure}m</option>
-            ))}
-          </select>
-        </div>
-      )}
+      <div style={{ background: '#e9ecef', padding: '15px', borderRadius: '8px', marginBottom: '20px' }}>
+        <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', color: '#1a1a2e' }}>📦 Loan Product</h3>
+        <select value={formData.loan_product_id} onChange={(e) => handleProductChange(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '14px' }}>
+          <option value="">Select a product (optional)</option>
+          {loanProducts.map((p: any) => (
+            <option key={p.id} value={p.id}>{p.name} - {p.default_interest_rate}% / {p.default_tenure}m</option>
+          ))}
+        </select>
+        {loanProducts.length === 0 && (
+          <p style={{ color: '#6c757d', fontSize: '12px', marginTop: '5px' }}>
+            No products available. Click <strong>"New Product"</strong> to create one.
+          </p>
+        )}
+      </div>
 
       {/* Loan Terms */}
       <div style={{ background: '#fff3cd', padding: '15px', borderRadius: '8px', marginBottom: '20px' }}>
@@ -240,79 +316,6 @@ function LoanApplicationForm({ onSuccess, clients, loanProducts }: { onSuccess: 
       <button type="submit" disabled={loading} style={{ padding: '12px 40px', background: '#0d6efd', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '16px', width: '100%', fontWeight: 600 }}>
         {loading ? 'Submitting...' : '✅ Submit Loan Application'}
       </button>
-    </form>
-  );
-}
-
-// ============================================
-// LOAN PRODUCT FORM COMPONENT (NEW)
-// ============================================
-function LoanProductForm({ onSuccess, onCancel }: { onSuccess: () => void; onCancel: () => void }) {
-  const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    min_principal: 1000000,
-    max_principal: 50000000,
-    default_interest_rate: 12,
-    default_tenure: 12,
-  });
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/admin/loan-products`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-        body: JSON.stringify(formData)
-      });
-      const data = await res.json();
-      if (res.ok) {
-        alert('✅ Loan product created successfully!');
-        onSuccess();
-      } else {
-        alert('Failed to create loan product: ' + (data.detail || 'Unknown error'));
-      }
-    } catch (err) {
-      alert('Error creating loan product');
-    }
-    setLoading(false);
-  };
-
-  return (
-    <form onSubmit={handleSubmit} style={{ background: 'white', padding: '24px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', marginBottom: '20px' }}>
-      <h3 style={{ marginTop: 0 }}>📦 New Loan Product</h3>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-        <div>
-          <label style={{ fontWeight: 600, fontSize: '13px' }}>Product Name *</label>
-          <input value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} required />
-        </div>
-        <div>
-          <label style={{ fontWeight: 600, fontSize: '13px' }}>Description</label>
-          <input value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} />
-        </div>
-        <div>
-          <label style={{ fontWeight: 600, fontSize: '13px' }}>Min Principal ({CURRENCY}) *</label>
-          <input type="number" value={formData.min_principal} onChange={(e) => setFormData({...formData, min_principal: parseFloat(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} required />
-        </div>
-        <div>
-          <label style={{ fontWeight: 600, fontSize: '13px' }}>Max Principal ({CURRENCY}) *</label>
-          <input type="number" value={formData.max_principal} onChange={(e) => setFormData({...formData, max_principal: parseFloat(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} required />
-        </div>
-        <div>
-          <label style={{ fontWeight: 600, fontSize: '13px' }}>Default Rate (%) *</label>
-          <input type="number" step="0.01" value={formData.default_interest_rate} onChange={(e) => setFormData({...formData, default_interest_rate: parseFloat(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} required />
-        </div>
-        <div>
-          <label style={{ fontWeight: 600, fontSize: '13px' }}>Default Tenure (Months) *</label>
-          <input type="number" value={formData.default_tenure} onChange={(e) => setFormData({...formData, default_tenure: parseInt(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} required />
-        </div>
-      </div>
-      <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
-        <button type="submit" disabled={loading} style={{ padding: '10px 24px', background: '#0d6efd', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>{loading ? 'Creating...' : '✅ Create Product'}</button>
-        <button type="button" onClick={onCancel} style={{ padding: '10px 24px', background: '#6c757d', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>Cancel</button>
-      </div>
     </form>
   );
 }
@@ -522,7 +525,7 @@ function App() {
         fetchAdminData();
       } else {
         const data = await res.json();
-        alert('Failed to create client: ' + (data.detail || 'Unknown error'));
+        alert('Failed to create client: ' + JSON.stringify(data));
       }
     } catch (err) {
       alert('Error creating client');
