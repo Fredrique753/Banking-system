@@ -24,17 +24,10 @@ app = FastAPI(title="Banking System", version="1.0")
 # --- CORS CONFIGURATION ---
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://banking-system-tau-flax.vercel.app",
-        "https://banking-system-qdnx.onrender.com",
-        "http://localhost",
-        "http://127.0.0.1",
-        "http://localhost:5173",
-        "http://localhost:3000",
-    ],
+    allow_origins=["*"],   # <-- THIS ALLOWS EVERYTHING (TEMPORARY)
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # --- REGISTER ROUTERS ---
