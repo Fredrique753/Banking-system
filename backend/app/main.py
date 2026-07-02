@@ -21,13 +21,20 @@ from .routes_reports import router as reports_router
 # --- CREATE APP ---
 app = FastAPI(title="Banking System", version="1.0")
 
-# --- CORS CONFIGURATION ---
+# --- CORS CONFIGURATION (PROPER - NOT ALLOWING ALL) ---
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   # <-- THIS ALLOWS EVERYTHING (TEMPORARY)
+    allow_origins=[
+        "https://banking-system-tau-flax.vercel.app",  # Your Vercel frontend
+        "https://banking-system-qdnx.onrender.com",    # Your Render backend
+        "http://localhost",
+        "http://127.0.0.1",
+        "http://localhost:5173",
+        "http://localhost:3000",
+    ],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"],
 )
 
 # --- REGISTER ROUTERS ---
