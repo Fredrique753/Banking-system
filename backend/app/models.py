@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Numeric, ForeignKey, Enum, Index, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, Numeric, ForeignKey, Enum, Index, Boolean, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -15,6 +15,19 @@ class LoanStatus(str, enum.Enum):
     REJECTED = "rejected"
     DISBURSED = "disbursed"
 
+# --- NEW: LOAN PRODUCTS TABLE ---
+class LoanProduct(Base):
+    __tablename__ = "loan_products"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), nullable=False)
+    description = Column(String(200))
+    min_principal = Column(Numeric(18,2), nullable=False)
+    max_principal = Column(Numeric(18,2), nullable=False)
+    default_interest_rate = Column(Numeric(10,4), nullable=False)
+    default_tenure = Column(Integer, nullable=False)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, server_default=func.now())
+
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
@@ -22,10 +35,10 @@ class User(Base):
     email = Column(String(100), unique=True, nullable=False)
     hashed_password = Column(String(255), nullable=False)
     full_name = Column(String(100))
+    phone = Column(String(20))  # NEW: Admin phone for notifications
     role = Column(Enum(UserRole), default=UserRole.ADMIN)
     created_at = Column(DateTime, server_default=func.now())
     
-    # Relationships
     clients = relationship("Client", back_populates="created_by_user")
     approved_loans = relationship("Loan", foreign_keys="Loan.approved_by")
 
@@ -41,7 +54,6 @@ class Client(Base):
     created_by = Column(Integer, ForeignKey("users.id"), nullable=False)
     created_at = Column(DateTime, server_default=func.now())
     
-    # Relationships
     created_by_user = relationship("User", back_populates="clients")
     loans = relationship("Loan", back_populates="client", cascade="all, delete-orphan")
 
@@ -49,6 +61,7 @@ class Loan(Base):
     __tablename__ = "loans"
     id = Column(Integer, primary_key=True, index=True)
     client_id = Column(Integer, ForeignKey("clients.id"), nullable=False)
+    loan_product_id = Column(Integer, ForeignKey("loan_products.id"), nullable=True)  # NEW
     
     principal = Column(Numeric(18,2), nullable=False)
     annual_interest_rate = Column(Numeric(10,4), nullable=False)
@@ -57,7 +70,12 @@ class Loan(Base):
     total_payment = Column(Numeric(18,2), nullable=False)
     total_interest = Column(Numeric(18,2), nullable=False)
     
-    # Guarantors (stored as JSON or simple fields)
+    # --- NEW FIELDS ---
+    business_type = Column(String(100))
+    loan_purpose = Column(String(200))
+    repayment_source = Column(String(100))
+    
+    # Guarantors
     guarantor_name = Column(String(100))
     guarantor_phone = Column(String(20))
     guarantor_email = Column(String(100))
@@ -76,9 +94,9 @@ class Loan(Base):
     approved_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, server_default=func.now())
     
-    # Relationships
     client = relationship("Client", back_populates="loans")
     approver = relationship("User", foreign_keys=[approved_by])
+    loan_product = relationship("LoanProduct")
     schedule = relationship("PaymentSchedule", back_populates="loan", cascade="all, delete-orphan")
 
 class PaymentSchedule(Base):

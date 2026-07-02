@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import { Bar } from 'react-chartjs-2';
+
+// Register ChartJS components
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const API_BASE_URL = 'https://banking-system-qdnx.onrender.com';
+const CURRENCY = 'UGX'; // Fixed currency
 
 // ============================================
 // CHANGE PASSWORD MODAL
@@ -76,13 +82,17 @@ function ChangePasswordModal({ isOpen, onClose, onSuccess }: { isOpen: boolean; 
 // ============================================
 // LOAN APPLICATION FORM COMPONENT
 // ============================================
-function LoanApplicationForm({ onSuccess, clients }: { onSuccess: () => void; clients: any[] }) {
+function LoanApplicationForm({ onSuccess, clients, loanProducts }: { onSuccess: () => void; clients: any[]; loanProducts: any[] }) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     client_id: '',
+    loan_product_id: '',
     principal: 5000000,
     annual_interest_rate: 12,
     tenure_months: 12,
+    business_type: '',
+    loan_purpose: '',
+    repayment_source: '',
     guarantor_name: '',
     guarantor_phone: '',
     guarantor_email: '',
@@ -94,6 +104,21 @@ function LoanApplicationForm({ onSuccess, clients }: { onSuccess: () => void; cl
     collateral_type: 'Land Title',
     collateral_value: 20000000,
   });
+
+  const handleProductChange = (productId: string) => {
+    const product = loanProducts.find(p => p.id === parseInt(productId));
+    if (product) {
+      setFormData({
+        ...formData,
+        loan_product_id: productId,
+        annual_interest_rate: product.default_interest_rate,
+        tenure_months: product.default_tenure,
+        principal: Math.max(product.min_principal, Math.min(product.max_principal, formData.principal))
+      });
+    } else {
+      setFormData({ ...formData, loan_product_id: productId });
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,7 +132,7 @@ function LoanApplicationForm({ onSuccess, clients }: { onSuccess: () => void; cl
       });
       const data = await res.json();
       if (res.ok) {
-        alert(`✅ Loan application submitted! Loan ID: ${data.loan_id}\nMonthly EMI: UGX ${data.monthly_emi}`);
+        alert(`✅ Loan application submitted! Loan ID: ${data.loan_id}\nMonthly EMI: ${CURRENCY} ${data.monthly_emi.toLocaleString()}`);
         onSuccess();
       } else {
         alert('Failed to submit loan: ' + (data.detail || 'Unknown error'));
@@ -129,13 +154,36 @@ function LoanApplicationForm({ onSuccess, clients }: { onSuccess: () => void; cl
         </select>
       </div>
 
+      {/* Loan Product */}
+      {loanProducts.length > 0 && (
+        <div style={{ background: '#e9ecef', padding: '15px', borderRadius: '8px', marginBottom: '20px' }}>
+          <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', color: '#1a1a2e' }}>📦 Loan Product</h3>
+          <select value={formData.loan_product_id} onChange={(e) => handleProductChange(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '14px' }}>
+            <option value="">Select a product (optional)</option>
+            {loanProducts.map((p) => (
+              <option key={p.id} value={p.id}>{p.name} - {p.default_interest_rate}% / {p.default_tenure}m</option>
+            ))}
+          </select>
+        </div>
+      )}
+
       {/* Loan Terms */}
       <div style={{ background: '#fff3cd', padding: '15px', borderRadius: '8px', marginBottom: '20px' }}>
         <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', color: '#856404' }}>💰 Loan Terms</h3>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px' }}>
-          <div><label style={{ fontWeight: 600, fontSize: '13px' }}>Principal (UGX) *</label><input type="number" value={formData.principal} onChange={(e) => setFormData({...formData, principal: parseFloat(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} required /></div>
+          <div><label style={{ fontWeight: 600, fontSize: '13px' }}>Principal ({CURRENCY}) *</label><input type="number" value={formData.principal} onChange={(e) => setFormData({...formData, principal: parseFloat(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} required /></div>
           <div><label style={{ fontWeight: 600, fontSize: '13px' }}>Annual Rate (%) *</label><input type="number" step="0.01" value={formData.annual_interest_rate} onChange={(e) => setFormData({...formData, annual_interest_rate: parseFloat(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} required /></div>
           <div><label style={{ fontWeight: 600, fontSize: '13px' }}>Tenure (Months) *</label><input type="number" value={formData.tenure_months} onChange={(e) => setFormData({...formData, tenure_months: parseInt(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} required /></div>
+        </div>
+      </div>
+
+      {/* New Fields: Business Type, Loan Purpose, Repayment Source */}
+      <div style={{ background: '#e3f2fd', padding: '15px', borderRadius: '8px', marginBottom: '20px' }}>
+        <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', color: '#0d47a1' }}>📋 Loan Details</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px' }}>
+          <div><label style={{ fontWeight: 600, fontSize: '13px' }}>Business Type</label><input value={formData.business_type} onChange={(e) => setFormData({...formData, business_type: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} /></div>
+          <div><label style={{ fontWeight: 600, fontSize: '13px' }}>Loan Purpose</label><input value={formData.loan_purpose} onChange={(e) => setFormData({...formData, loan_purpose: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} /></div>
+          <div><label style={{ fontWeight: 600, fontSize: '13px' }}>Repayment Source</label><input value={formData.repayment_source} onChange={(e) => setFormData({...formData, repayment_source: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} /></div>
         </div>
       </div>
 
@@ -155,11 +203,11 @@ function LoanApplicationForm({ onSuccess, clients }: { onSuccess: () => void; cl
         <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', color: '#0f5132' }}>📊 Financial & Employment</h3>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px' }}>
           <div><label style={{ fontWeight: 600, fontSize: '13px' }}>Employment Status</label><select value={formData.employment_status} onChange={(e) => setFormData({...formData, employment_status: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }}><option>Employed</option><option>Self-Employed</option><option>Unemployed</option><option>Retired</option></select></div>
-          <div><label style={{ fontWeight: 600, fontSize: '13px' }}>Monthly Income (UGX)</label><input type="number" value={formData.monthly_income} onChange={(e) => setFormData({...formData, monthly_income: parseFloat(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} /></div>
-          <div><label style={{ fontWeight: 600, fontSize: '13px' }}>Existing Debts (UGX/month)</label><input type="number" value={formData.existing_debts} onChange={(e) => setFormData({...formData, existing_debts: parseFloat(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} /></div>
+          <div><label style={{ fontWeight: 600, fontSize: '13px' }}>Monthly Income ({CURRENCY})</label><input type="number" value={formData.monthly_income} onChange={(e) => setFormData({...formData, monthly_income: parseFloat(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} /></div>
+          <div><label style={{ fontWeight: 600, fontSize: '13px' }}>Existing Debts ({CURRENCY}/month)</label><input type="number" value={formData.existing_debts} onChange={(e) => setFormData({...formData, existing_debts: parseFloat(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} /></div>
           <div><label style={{ fontWeight: 600, fontSize: '13px' }}>Credit Score</label><input type="number" value={formData.credit_score} onChange={(e) => setFormData({...formData, credit_score: parseInt(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} /></div>
           <div><label style={{ fontWeight: 600, fontSize: '13px' }}>Collateral Type</label><input value={formData.collateral_type} onChange={(e) => setFormData({...formData, collateral_type: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} /></div>
-          <div><label style={{ fontWeight: 600, fontSize: '13px' }}>Collateral Value (UGX)</label><input type="number" value={formData.collateral_value} onChange={(e) => setFormData({...formData, collateral_value: parseFloat(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} /></div>
+          <div><label style={{ fontWeight: 600, fontSize: '13px' }}>Collateral Value ({CURRENCY})</label><input type="number" value={formData.collateral_value} onChange={(e) => setFormData({...formData, collateral_value: parseFloat(e.target.value)})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px' }} /></div>
         </div>
       </div>
 
@@ -167,6 +215,37 @@ function LoanApplicationForm({ onSuccess, clients }: { onSuccess: () => void; cl
         {loading ? 'Submitting...' : '✅ Submit Loan Application'}
       </button>
     </form>
+  );
+}
+
+// ============================================
+// CHART COMPONENT
+// ============================================
+function LoanChart({ stats }: { stats: any }) {
+  if (!stats) return null;
+  
+  const data = {
+    labels: ['Pending', 'Approved', 'Rejected', 'Disbursed'],
+    datasets: [{
+      label: 'Loans by Status',
+      data: [stats.pending || 0, stats.approved || 0, stats.rejected || 0, stats.disbursed || 0],
+      backgroundColor: ['#ffc107', '#28a745', '#dc3545', '#0d6efd'],
+      borderRadius: 8,
+    }]
+  };
+  
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: { position: 'top' as const },
+      title: { display: true, text: '📊 Loan Portfolio Overview' }
+    }
+  };
+  
+  return (
+    <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+      <Bar options={options} data={data} height={200} />
+    </div>
   );
 }
 
@@ -181,10 +260,12 @@ function App() {
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [clients, setClients] = useState<any[]>([]);
   const [loans, setLoans] = useState<any[]>([]);
+  const [loanProducts, setLoanProducts] = useState<any[]>([]);
   const [dashboardStats, setDashboardStats] = useState<any>(null);
   const [showLoanForm, setShowLoanForm] = useState(false);
   const [showClientForm, setShowClientForm] = useState(false);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'clients' | 'loans' | 'reports'>('dashboard');
+  const [brandColor, setBrandColor] = useState('#1a1a2e'); // Custom brand color
 
   const [clientForm, setClientForm] = useState({
     first_name: '',
@@ -212,6 +293,7 @@ function App() {
         fetchAdminData();
         fetchClients();
         fetchLoans();
+        fetchLoanProducts();
       } else {
         localStorage.removeItem('token');
         setView('login');
@@ -281,6 +363,18 @@ function App() {
     } catch (err) { console.error(err); }
   };
 
+  const fetchLoanProducts = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/admin/loan-products`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setLoanProducts(data);
+      }
+    } catch (err) { console.error(err); }
+  };
+
   const updateLoanStatus = async (loanId: number, status: string) => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/v1/admin/loans/${loanId}/status?status=${status}`, {
@@ -318,7 +412,7 @@ function App() {
     setLoading(false);
   };
 
-  // --- DOWNLOAD REPORT HELPER ---
+  // Download report helper
   const downloadReport = async (endpoint: string, filename: string) => {
     try {
       const token = localStorage.getItem('token');
@@ -344,7 +438,7 @@ function App() {
   // --- LOGIN SCREEN ---
   if (view === 'login') {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', padding: '20px' }}>
+      <div style={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', background: `linear-gradient(135deg, ${brandColor} 0%, #16213e 100%)`, padding: '20px' }}>
         <div style={{ maxWidth: '420px', width: '100%', background: 'white', padding: '40px', borderRadius: '16px', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
           <div style={{ textAlign: 'center', marginBottom: '30px' }}>
             <h1 style={{ fontSize: '28px', color: '#1a1a2e', margin: 0 }}>🏦 Loan Management</h1>
@@ -359,7 +453,7 @@ function App() {
               <label style={{ fontWeight: 600, fontSize: '14px', color: '#333' }}>Password</label>
               <input type="password" placeholder="Enter your password" value={loginForm.password} onChange={e => setLoginForm({...loginForm, password: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '4px', fontSize: '14px' }} required />
             </div>
-            <button type="submit" disabled={loading} style={{ width: '100%', padding: '12px', background: '#0d6efd', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 600, cursor: 'pointer' }}>
+            <button type="submit" disabled={loading} style={{ width: '100%', padding: '12px', background: brandColor, color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 600, cursor: 'pointer' }}>
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
@@ -374,7 +468,7 @@ function App() {
     return (
       <div style={{ minHeight: '100vh', background: '#f0f2f5' }}>
         {/* TOP NAVBAR */}
-        <div style={{ background: '#1a1a2e', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+        <div style={{ background: brandColor, padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <span style={{ fontSize: '24px' }}>🏦</span>
             <span style={{ color: 'white', fontSize: '18px', fontWeight: 700 }}>Loan Management System</span>
@@ -392,10 +486,10 @@ function App() {
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '24px' }}>
             <button onClick={() => { setShowClientForm(!showClientForm); setShowLoanForm(false); }} style={{ padding: '10px 20px', background: '#28a745', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>➕ New Client</button>
             <button onClick={() => { setShowLoanForm(!showLoanForm); setShowClientForm(false); }} style={{ padding: '10px 20px', background: '#0d6efd', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>📝 New Loan</button>
-            <button onClick={() => { setActiveTab('dashboard'); fetchAdminData(); }} style={{ padding: '10px 20px', background: activeTab === 'dashboard' ? '#1a1a2e' : '#6c757d', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>📊 Dashboard</button>
-            <button onClick={() => { setActiveTab('clients'); fetchClients(); }} style={{ padding: '10px 20px', background: activeTab === 'clients' ? '#1a1a2e' : '#6c757d', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>👥 Clients</button>
-            <button onClick={() => { setActiveTab('loans'); fetchLoans(); }} style={{ padding: '10px 20px', background: activeTab === 'loans' ? '#1a1a2e' : '#6c757d', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>📋 Loans</button>
-            <button onClick={() => { setActiveTab('reports'); }} style={{ padding: '10px 20px', background: activeTab === 'reports' ? '#1a1a2e' : '#6c757d', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>📈 Reports</button>
+            <button onClick={() => { setActiveTab('dashboard'); fetchAdminData(); }} style={{ padding: '10px 20px', background: activeTab === 'dashboard' ? brandColor : '#6c757d', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>📊 Dashboard</button>
+            <button onClick={() => { setActiveTab('clients'); fetchClients(); }} style={{ padding: '10px 20px', background: activeTab === 'clients' ? brandColor : '#6c757d', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>👥 Clients</button>
+            <button onClick={() => { setActiveTab('loans'); fetchLoans(); }} style={{ padding: '10px 20px', background: activeTab === 'loans' ? brandColor : '#6c757d', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>📋 Loans</button>
+            <button onClick={() => { setActiveTab('reports'); }} style={{ padding: '10px 20px', background: activeTab === 'reports' ? brandColor : '#6c757d', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>📈 Reports</button>
           </div>
 
           {/* CLIENT FORM */}
@@ -418,7 +512,7 @@ function App() {
 
           {/* LOAN APPLICATION FORM */}
           {showLoanForm && (
-            <LoanApplicationForm onSuccess={() => { setShowLoanForm(false); fetchLoans(); fetchAdminData(); }} clients={clients} />
+            <LoanApplicationForm onSuccess={() => { setShowLoanForm(false); fetchLoans(); fetchAdminData(); }} clients={clients} loanProducts={loanProducts} />
           )}
 
           {/* DASHBOARD TAB */}
@@ -449,6 +543,11 @@ function App() {
                   <div style={{ fontSize: '28px', fontWeight: 700, color: '#084298' }}>{dashboardStats.disbursed || 0}</div>
                   <div style={{ fontSize: '13px', color: '#084298' }}>Disbursed</div>
                 </div>
+              </div>
+
+              {/* CHART */}
+              <div style={{ background: 'white', padding: '20px', borderRadius: '12px', marginTop: '20px' }}>
+                <LoanChart stats={dashboardStats} />
               </div>
             </div>
           )}
@@ -496,8 +595,8 @@ function App() {
                     <tr style={{ background: '#f8f9fa' }}>
                       <th style={{ padding: '10px', textAlign: 'left' }}>ID</th>
                       <th style={{ padding: '10px', textAlign: 'left' }}>Client</th>
-                      <th style={{ padding: '10px', textAlign: 'left' }}>Principal (UGX)</th>
-                      <th style={{ padding: '10px', textAlign: 'left' }}>EMI (UGX)</th>
+                      <th style={{ padding: '10px', textAlign: 'left' }}>Principal ({CURRENCY})</th>
+                      <th style={{ padding: '10px', textAlign: 'left' }}>EMI ({CURRENCY})</th>
                       <th style={{ padding: '10px', textAlign: 'left' }}>Status</th>
                       <th style={{ padding: '10px', textAlign: 'left' }}>Actions</th>
                     </tr>
@@ -547,9 +646,7 @@ function App() {
             </div>
           )}
 
-          {/* ============================================ */}
-          {/* REPORTS TAB - NEW! */}
-          {/* ============================================ */}
+          {/* REPORTS TAB */}
           {activeTab === 'reports' && (
             <div>
               <div style={{ background: 'white', padding: '24px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', marginBottom: '20px' }}>
