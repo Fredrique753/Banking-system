@@ -35,7 +35,7 @@ class User(Base):
     email = Column(String(100), unique=True, nullable=False)
     hashed_password = Column(String(255), nullable=False)
     full_name = Column(String(100))
-    # phone = Column(String(20))  # NEW: Admin phone for notifications
+    phone = Column(String(20))  # NEW: Admin phone for notifications
     role = Column(Enum(UserRole), default=UserRole.ADMIN)
     created_at = Column(DateTime, server_default=func.now())
     
