@@ -1,4 +1,4 @@
-// v2 - force redeploy
+// v2 - Force redeploy
 /* eslint-disable */ 
 import { useState, useEffect } from 'react';
 // @ts-ignore
