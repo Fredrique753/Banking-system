@@ -159,7 +159,7 @@ function LoanApplicationForm({ onSuccess, clients, loanProducts }: { onSuccess: 
         alert(`✅ Loan application submitted! Loan ID: ${data.loan_id}\nMonthly EMI: ${CURRENCY} ${data.monthly_emi.toLocaleString()}`);
         onSuccess();
       } else {
-        alert('Failed to submit loan: ' + (data.detail || 'Unknown error'));
+        alert('Failed to submit loan: ' + JSON.stringify(data, null, 2));
       }
     } catch (err) {
       alert('Error submitting loan');
