@@ -1,4 +1,5 @@
-/* eslint-disable */
+// v2 - force redeploy
+/* eslint-disable */ 
 import { useState, useEffect } from 'react';
 // @ts-ignore
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
